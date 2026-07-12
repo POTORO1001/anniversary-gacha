@@ -11,6 +11,18 @@
     ["#ff8fbd", "#fff2c8"],
     ["#e93d48", "#ffffff"]
   ];
+  const soundFiles = {
+    tap: "audio/tap.mp3",
+    gacha_start: "audio/gacha_start.mp3",
+    click: "audio/click.mp3",
+    capsule_drop: "audio/capsule_drop.mp3",
+    hit: "audio/capsule_hit.mp3",
+    charge: "audio/charge.mp3",
+    capsule_open: "audio/capsule_open.mp3",
+    sparkle: "audio/sparkle.mp3",
+    result: "audio/result.mp3"
+  };
+  const missingSoundFiles = new Set();
 
   const AppState = {
     screen: "idle",
@@ -21,6 +33,7 @@
     skipRequested: false,
     skipAvailable: true,
     soundEnabled: true,
+    audioContext: null,
     timers: []
   };
 
@@ -103,6 +116,7 @@
 
   async function startGacha() {
     if (AppState.isAnimating || isLandscape()) return;
+    unlockAudio();
     const selectedMaid = drawMaid();
     if (!selectedMaid) {
       alert("ガチャに登録されているメイドさんがいません。\nconfig.jsを確認してください。");
@@ -464,23 +478,116 @@
 
   function playSound(name) {
     if (!AppState.soundEnabled) return;
-    const map = {
-      tap: "audio/tap.mp3",
-      gacha_start: "audio/gacha_start.mp3",
-      click: "audio/click.mp3",
-      capsule_drop: "audio/capsule_drop.mp3",
-      hit: "audio/capsule_hit.mp3",
-      charge: "audio/charge.mp3",
-      capsule_open: "audio/capsule_open.mp3",
-      sparkle: "audio/sparkle.mp3",
-      result: "audio/result.mp3"
+    const src = soundFiles[name];
+    if (!src || missingSoundFiles.has(src)) {
+      playSyntheticSound(name);
+      return;
+    }
+
+    let usedFallback = false;
+    const fallback = () => {
+      if (usedFallback) return;
+      usedFallback = true;
+      missingSoundFiles.add(src);
+      playSyntheticSound(name);
     };
+
     try {
-      const audio = new Audio(map[name] || "");
+      const audio = new Audio(src);
       audio.volume = .72;
+      audio.preload = "auto";
+      audio.addEventListener("error", fallback, { once: true });
       const promise = audio.play();
-      if (promise && promise.catch) promise.catch(() => {});
+      if (promise && promise.catch) promise.catch(fallback);
+    } catch {
+      fallback();
+    }
+  }
+
+  function getAudioContext() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!AppState.audioContext) AppState.audioContext = new AudioContextClass();
+    if (AppState.audioContext.state === "suspended") {
+      AppState.audioContext.resume().catch(() => {});
+    }
+    return AppState.audioContext;
+  }
+
+  function unlockAudio() {
+    if (!AppState.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const gain = ctx.createGain();
+    gain.gain.value = .0001;
+    gain.connect(ctx.destination);
+    const source = ctx.createBufferSource();
+    source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    source.connect(gain);
+    source.start(0);
+    source.stop(0);
+    window.setTimeout(() => gain.disconnect(), 50);
+  }
+
+  function playSyntheticSound(name) {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    try {
+      if (name === "tap") {
+        playTone(ctx, now, .045, 720, 980, "triangle", .18);
+      } else if (name === "gacha_start") {
+        playTone(ctx, now, 1.18, 110, 260, "sawtooth", .12);
+        for (let i = 0; i < 8; i += 1) playTone(ctx, now + i * .14, .055, 180 + i * 18, 150 + i * 18, "square", .07);
+      } else if (name === "click") {
+        playTone(ctx, now, .035, 1040, 520, "square", .16);
+      } else if (name === "capsule_drop") {
+        playTone(ctx, now, .38, 520, 170, "triangle", .13);
+      } else if (name === "hit") {
+        playNoise(ctx, now, .12, .22);
+        playTone(ctx, now, .1, 120, 70, "sine", .14);
+      } else if (name === "charge") {
+        playTone(ctx, now, .52, 90, 150, "sine", .16);
+      } else if (name === "capsule_open") {
+        playTone(ctx, now, .16, 320, 900, "triangle", .2);
+        playNoise(ctx, now + .02, .18, .16);
+      } else if (name === "sparkle") {
+        [880, 1175, 1568].forEach((freq, index) => playTone(ctx, now + index * .07, .18, freq, freq * 1.25, "sine", .1));
+      } else if (name === "result") {
+        [523, 659, 784, 1046].forEach((freq, index) => playTone(ctx, now + index * .09, .22, freq, freq, "triangle", .12));
+      }
     } catch {}
+  }
+
+  function playTone(ctx, start, duration, fromFreq, toFreq, type, volume) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(fromFreq, start);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(30, toFreq), start + duration);
+    gain.gain.setValueAtTime(.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + .012);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + duration + .02);
+  }
+
+  function playNoise(ctx, start, duration, volume) {
+    const sampleCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, sampleCount, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < sampleCount; i += 1) data[i] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.setValueAtTime(volume, start);
+    gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(start);
+    source.stop(start + duration);
   }
 
   function updateSoundSetting() {
