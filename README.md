@@ -34,6 +34,7 @@ audio/
   capsule_open.mp3
   sparkle.mp3
   result.mp3
+google_apps_script.gs
 ```
 
 ## 使い方
@@ -47,7 +48,7 @@ iPadでは縦向きで使用してください。横向きの場合は案内メ�
 `config.js` だけを編集します。
 
 ```javascript
-const maidConfig = [
+window.maidConfig = [
   { id: "maid01", name: "ひなた", image: "img/maids/maid01.png" },
   { id: "maid02", name: "みるく", image: "img/maids/maid02.png" }
 ];
@@ -59,11 +60,17 @@ const maidConfig = [
 
 待機画面上部のタイトル部分を5回連続でタップすると管理者設定を開けます。
 
-管理者設定では、登録人数、登録名、効果音ON/OFF、スキップON/OFF、現在の履歴、演出テストを確認できます。スキップ機能は初期状態でONです。
+管理者設定では、登録人数、登録名、効果音ON/OFF、スキップON/OFF、スプレッドシート連携ON/OFF、送信先URL、現在の履歴、演出テストを確認できます。スキップ機能は初期状態でONです。
 
 ## 履歴
 
-履歴は現在のご主人様分だけ `localStorage` に保存します。「次のご主人様」を押して確認すると履歴を削除し、回数を0に戻します。
+ガチャを回す前にご主人様名の入力ポップアップを表示します。履歴は現在のご主人様分だけ `localStorage` に保存します。「次のご主人様」を押して確認すると履歴と名前を削除し、回数を0に戻します。
+
+## スプレッドシート連携
+
+Googleスプレッドシートに `google_apps_script.gs` の内容を貼り付けて、Apps ScriptのWebアプリとしてデプロイします。発行されたWebアプリURLを、管理者設定の「送信先URL」に貼り付けて「スプレッドシート連携 ON」にしてください。
+
+送信される項目は、`resultId / 日時 / ご主人様名 / メイドID / 当選メイド / 回数 / 端末名 / UserAgent` です。通信できない場合は未送信ログとして端末に残り、管理者設定から再送できます。
 
 ## 演出
 

@@ -294,6 +294,14 @@ button:disabled {
   font-weight: 800;
 }
 
+.idle-footer p {
+  margin: 0 0 5px;
+}
+
+#guestNameLabel {
+  color: var(--deep);
+}
+
 .quiet-button,
 .danger-button,
 .skip-button,
@@ -693,6 +701,33 @@ button:disabled {
   height: 28px;
 }
 
+.field-row {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0;
+  font-weight: 800;
+}
+
+.field-row input,
+.guest-dialog input {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 3px solid #ffd0e3;
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+  font-size: 18px;
+  outline: 0;
+}
+
+.field-row input:focus,
+.guest-dialog input:focus {
+  border-color: var(--hot-pink);
+  box-shadow: 0 0 0 4px rgba(232, 63, 132, .15);
+}
+
 dialog {
   width: min(86vw, 520px);
   border: 0;
@@ -703,8 +738,13 @@ dialog {
 }
 
 dialog::backdrop { background: rgba(35,8,31,.48); }
+dialog h2 { margin: 0 0 10px; font-size: 28px; }
 dialog p { font-weight: 800; line-height: 1.65; }
 dialog menu { display: flex; justify-content: flex-end; gap: 12px; padding: 0; }
+
+.guest-dialog {
+  text-align: left;
+}
 
 .orientation-warning {
   position: absolute;

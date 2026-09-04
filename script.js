@@ -4,6 +4,9 @@
   const STORAGE_HISTORY = "maidGachaHistory";
   const STORAGE_SOUND = "maidGachaSound";
   const STORAGE_SKIP = "maidGachaSkip";
+  const STORAGE_GUEST_NAME = "maidGachaGuestName";
+  const STORAGE_PENDING_LOGS = "maidGachaPendingSpreadsheetLogs";
+  const STORAGE_SHEET_SETTINGS = "maidGachaSpreadsheetSettings";
   const capsulePalette = [
     ["#f54d7f", "#ffd94d"],
     ["#4ab6ff", "#fff4f7"],
@@ -29,10 +32,15 @@
     isAnimating: false,
     selectedMaid: null,
     resultSaved: false,
+    currentGuestName: "",
     currentHistory: [],
+    pendingLogs: [],
     skipRequested: false,
     skipAvailable: true,
     soundEnabled: true,
+    spreadsheetEnabled: false,
+    spreadsheetEndpointUrl: "",
+    deviceName: "",
     audioContext: null,
     timers: []
   };
@@ -45,8 +53,11 @@
   function init() {
     cacheElements();
     AppState.currentHistory = loadHistory();
+    AppState.currentGuestName = localStorage.getItem(STORAGE_GUEST_NAME) || "";
+    AppState.pendingLogs = loadPendingLogs();
     AppState.soundEnabled = localStorage.getItem(STORAGE_SOUND) !== "off";
     AppState.skipAvailable = localStorage.getItem(STORAGE_SKIP) !== "off";
+    loadSpreadsheetSettings();
 
     createWindowCapsules();
     applyImageFallbacks();
@@ -67,7 +78,10 @@
       "drawCount", "particleLayer", "flash", "skipButton", "adminTapTarget",
       "adminPanel", "closeAdminButton", "soundToggle", "skipToggle",
       "resetHistoryButton", "testAnimationButton", "maidCount", "adminDrawCount",
-      "maidList", "confirmDialog", "orientationWarning"
+      "maidList", "confirmDialog", "orientationWarning", "guestDialog",
+      "guestForm", "guestNameInput", "guestCancelButton", "guestNameLabel", "adminGuestName",
+      "spreadsheetToggle", "spreadsheetUrlInput", "deviceNameInput",
+      "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount"
     ].forEach((id) => { els[id] = $(id); });
   }
 
@@ -79,7 +93,18 @@
     els.closeAdminButton.addEventListener("click", () => els.adminPanel.classList.remove("is-active"));
     els.soundToggle.addEventListener("change", updateSoundSetting);
     els.skipToggle.addEventListener("change", updateSkipSetting);
+    els.spreadsheetToggle.addEventListener("change", updateSpreadsheetEnabled);
+    els.saveSpreadsheetSettingsButton.addEventListener("click", saveSpreadsheetSettings);
+    els.retrySyncButton.addEventListener("click", retryPendingLogs);
     els.resetHistoryButton.addEventListener("click", confirmNextGuest);
+    els.guestCancelButton.addEventListener("click", () => els.guestDialog.close("cancel"));
+    els.guestForm.addEventListener("submit", (event) => {
+      if (event.submitter && event.submitter.value === "cancel") return;
+      if (!els.guestNameInput.value.trim()) {
+        event.preventDefault();
+        els.guestNameInput.focus();
+      }
+    });
     els.testAnimationButton.addEventListener("click", () => {
       els.adminPanel.classList.remove("is-active");
       startGacha();
@@ -114,9 +139,45 @@
     });
   }
 
+  function ensureGuestName() {
+    if (AppState.currentGuestName) return Promise.resolve(AppState.currentGuestName);
+    if (typeof els.guestDialog.showModal !== "function") {
+      const name = prompt("ご主人様のお名前を入力してください。");
+      return Promise.resolve(saveGuestName(name));
+    }
+
+    els.guestNameInput.value = "";
+    els.guestDialog.showModal();
+    window.setTimeout(() => els.guestNameInput.focus(), 80);
+
+    return new Promise((resolve) => {
+      const onClose = () => {
+        els.guestDialog.removeEventListener("close", onClose);
+        if (els.guestDialog.returnValue !== "confirm") {
+          resolve("");
+          return;
+        }
+        resolve(saveGuestName(els.guestNameInput.value));
+      };
+      els.guestDialog.addEventListener("close", onClose);
+    });
+  }
+
+  function saveGuestName(name) {
+    const normalized = (name || "").trim().replace(/\s+/g, " ");
+    if (!normalized) return "";
+    AppState.currentGuestName = normalized;
+    localStorage.setItem(STORAGE_GUEST_NAME, normalized);
+    renderHistory();
+    renderAdmin();
+    return normalized;
+  }
+
   async function startGacha() {
     if (AppState.isAnimating || isLandscape()) return;
     unlockAudio();
+    const guestName = await ensureGuestName();
+    if (!guestName) return;
     const selectedMaid = drawMaid();
     if (!selectedMaid) {
       alert("ガチャに登録されているメイドさんがいません。\nconfig.jsを確認してください。");
@@ -258,14 +319,21 @@
 
   function saveResult(maid) {
     if (AppState.resultSaved || !maid) return;
-    AppState.currentHistory.push({
+    const result = {
+      resultId: createResultId(),
+      guestName: AppState.currentGuestName || "未入力",
       id: maid.id,
       name: maid.name,
       image: maid.image,
+      drawNumber: AppState.currentHistory.length + 1,
+      deviceName: AppState.deviceName,
+      synced: false,
       at: new Date().toISOString()
-    });
+    };
+    AppState.currentHistory.push(result);
     AppState.resultSaved = true;
     localStorage.setItem(STORAGE_HISTORY, JSON.stringify(AppState.currentHistory));
+    queueSpreadsheetResult(result);
   }
 
   function loadHistory() {
@@ -277,15 +345,27 @@
     }
   }
 
+  function loadPendingLogs() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_PENDING_LOGS) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
   function clearHistory() {
     AppState.currentHistory = [];
     AppState.resultSaved = false;
+    AppState.currentGuestName = "";
     localStorage.removeItem(STORAGE_HISTORY);
+    localStorage.removeItem(STORAGE_GUEST_NAME);
     renderHistory();
     renderAdmin();
   }
 
   function renderHistory() {
+    els.guestNameLabel.textContent = `ご主人様: ${AppState.currentGuestName || "未入力"}`;
     els.drawCount.textContent = `今回のガチャ: ${AppState.currentHistory.length}回`;
     els.historyList.replaceChildren();
     AppState.currentHistory.slice(-5).forEach((item, index) => {
@@ -293,7 +373,7 @@
       const number = document.createElement("span");
       const name = document.createElement("span");
       number.textContent = `${AppState.currentHistory.length - Math.min(5, AppState.currentHistory.length) + index + 1}回`;
-      name.textContent = item.name;
+      name.textContent = `${item.guestName ? `${item.guestName}様 / ` : ""}${item.name}`;
       li.append(number, name);
       els.historyList.appendChild(li);
     });
@@ -303,8 +383,13 @@
     const maids = getMaidList();
     els.maidCount.textContent = `${maids.length}人`;
     els.adminDrawCount.textContent = `${AppState.currentHistory.length}回`;
+    els.adminGuestName.textContent = AppState.currentGuestName || "未入力";
+    els.pendingSyncCount.textContent = `${AppState.pendingLogs.length}件`;
     els.soundToggle.checked = AppState.soundEnabled;
     els.skipToggle.checked = AppState.skipAvailable;
+    els.spreadsheetToggle.checked = AppState.spreadsheetEnabled;
+    els.spreadsheetUrlInput.value = AppState.spreadsheetEndpointUrl;
+    els.deviceNameInput.value = AppState.deviceName;
     els.maidList.replaceChildren();
     maids.forEach((maid) => {
       const row = document.createElement("div");
@@ -524,8 +609,8 @@
     const source = ctx.createBufferSource();
     source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
     source.connect(gain);
-    source.start(0);
-    source.stop(0);
+    source.start(ctx.currentTime);
+    source.stop(ctx.currentTime + .01);
     window.setTimeout(() => gain.disconnect(), 50);
   }
 
@@ -598,6 +683,145 @@
   function updateSkipSetting() {
     AppState.skipAvailable = els.skipToggle.checked;
     localStorage.setItem(STORAGE_SKIP, AppState.skipAvailable ? "on" : "off");
+  }
+
+  function loadSpreadsheetSettings() {
+    const defaults = getSpreadsheetDefaults();
+    let saved = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(STORAGE_SHEET_SETTINGS) || "{}");
+    } catch {
+      saved = {};
+    }
+    AppState.spreadsheetEnabled = Boolean(saved.enabled ?? defaults.enabled);
+    AppState.spreadsheetEndpointUrl = String(saved.endpointUrl ?? defaults.endpointUrl ?? "").trim();
+    AppState.deviceName = String(saved.deviceName ?? defaults.deviceName ?? "iPad受付").trim() || "iPad受付";
+  }
+
+  function getSpreadsheetDefaults() {
+    if (window.spreadsheetConfig) {
+      return window.spreadsheetConfig;
+    }
+    if (typeof spreadsheetConfig === "undefined") {
+      return { enabled: false, endpointUrl: "", deviceName: "iPad受付" };
+    }
+    return spreadsheetConfig || { enabled: false, endpointUrl: "", deviceName: "iPad受付" };
+  }
+
+  function updateSpreadsheetEnabled() {
+    AppState.spreadsheetEnabled = els.spreadsheetToggle.checked;
+    persistSpreadsheetSettings();
+    if (AppState.spreadsheetEnabled) {
+      queueUnsyncedHistory();
+      retryPendingLogs();
+    }
+  }
+
+  function saveSpreadsheetSettings() {
+    AppState.spreadsheetEnabled = els.spreadsheetToggle.checked;
+    AppState.spreadsheetEndpointUrl = els.spreadsheetUrlInput.value.trim();
+    AppState.deviceName = els.deviceNameInput.value.trim() || "iPad受付";
+    persistSpreadsheetSettings();
+    renderAdmin();
+    if (AppState.spreadsheetEnabled) {
+      queueUnsyncedHistory();
+      retryPendingLogs();
+    }
+    alert("スプレッドシート連携設定を保存しました。");
+  }
+
+  function persistSpreadsheetSettings() {
+    localStorage.setItem(STORAGE_SHEET_SETTINGS, JSON.stringify({
+      enabled: AppState.spreadsheetEnabled,
+      endpointUrl: AppState.spreadsheetEndpointUrl,
+      deviceName: AppState.deviceName
+    }));
+  }
+
+  function queueSpreadsheetResult(result) {
+    if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl) {
+      renderAdmin();
+      return;
+    }
+    if (!AppState.pendingLogs.some((item) => item.resultId === result.resultId)) {
+      AppState.pendingLogs.push(result);
+      persistPendingLogs();
+    }
+    sendSpreadsheetResult(result);
+  }
+
+  function queueUnsyncedHistory() {
+    if (!AppState.spreadsheetEndpointUrl) return;
+    AppState.currentHistory
+      .filter((item) => item.resultId && !item.synced)
+      .forEach((item) => {
+        if (!AppState.pendingLogs.some((pending) => pending.resultId === item.resultId)) {
+          AppState.pendingLogs.push(item);
+        }
+      });
+    persistPendingLogs();
+    renderAdmin();
+  }
+
+  async function retryPendingLogs() {
+    if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl || AppState.pendingLogs.length === 0) {
+      renderAdmin();
+      return;
+    }
+    const pending = [...AppState.pendingLogs];
+    for (const item of pending) {
+      await sendSpreadsheetResult(item);
+    }
+  }
+
+  async function sendSpreadsheetResult(result) {
+    if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl || !result) return;
+    const payload = {
+      resultId: result.resultId,
+      timestamp: result.at,
+      guestName: result.guestName || "未入力",
+      maidId: result.id || "",
+      maidName: result.name || "",
+      drawNumber: result.drawNumber || "",
+      deviceName: result.deviceName || AppState.deviceName || "",
+      userAgent: navigator.userAgent
+    };
+
+    try {
+      const body = new URLSearchParams();
+      body.set("payload", JSON.stringify(payload));
+      await fetch(AppState.spreadsheetEndpointUrl, {
+        method: "POST",
+        mode: "no-cors",
+        body
+      });
+      markResultSynced(result.resultId);
+    } catch (error) {
+      console.warn("Spreadsheet sync failed", error);
+    } finally {
+      renderAdmin();
+    }
+  }
+
+  function markResultSynced(resultId) {
+    AppState.pendingLogs = AppState.pendingLogs.filter((item) => item.resultId !== resultId);
+    AppState.currentHistory = AppState.currentHistory.map((item) => {
+      if (item.resultId !== resultId) return item;
+      return { ...item, synced: true };
+    });
+    persistPendingLogs();
+    localStorage.setItem(STORAGE_HISTORY, JSON.stringify(AppState.currentHistory));
+  }
+
+  function persistPendingLogs() {
+    localStorage.setItem(STORAGE_PENDING_LOGS, JSON.stringify(AppState.pendingLogs));
+  }
+
+  function createResultId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
 
   function confirmNextGuest() {

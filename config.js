@@ -1,4 +1,4 @@
-const maidConfig = [
+window.maidConfig = [
   {
     id: "maid01",
     name: "ひなた",
@@ -10,3 +10,9 @@ const maidConfig = [
     image: "img/maids/maid02.png"
   }
 ];
+
+window.spreadsheetConfig = {
+  enabled: false,
+  endpointUrl: "",
+  deviceName: "iPad受付"
+};

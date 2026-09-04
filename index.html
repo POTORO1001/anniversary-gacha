@@ -40,7 +40,10 @@
       </button>
 
       <footer class="idle-footer">
-        <p id="drawCount">今回のガチャ: 0回</p>
+        <div>
+          <p id="guestNameLabel">ご主人様: 未入力</p>
+          <p id="drawCount">今回のガチャ: 0回</p>
+        </div>
         <button class="quiet-button" id="nextGuestButton">次のご主人様</button>
       </footer>
     </section>
@@ -90,6 +93,8 @@
         <dl>
           <div><dt>登録人数</dt><dd id="maidCount">0人</dd></div>
           <div><dt>現在の回数</dt><dd id="adminDrawCount">0回</dd></div>
+          <div><dt>現在のお名前</dt><dd id="adminGuestName">未入力</dd></div>
+          <div><dt>未送信ログ</dt><dd id="pendingSyncCount">0件</dd></div>
         </dl>
         <div class="maid-list" id="maidList"></div>
         <label class="toggle-row">
@@ -100,10 +105,36 @@
           <input type="checkbox" id="skipToggle">
           <span>スキップ機能 ON</span>
         </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="spreadsheetToggle">
+          <span>スプレッドシート連携 ON</span>
+        </label>
+        <label class="field-row">
+          <span>送信先URL</span>
+          <input type="url" id="spreadsheetUrlInput" placeholder="Google Apps ScriptのWebアプリURL">
+        </label>
+        <label class="field-row">
+          <span>端末名</span>
+          <input type="text" id="deviceNameInput" placeholder="iPad受付">
+        </label>
+        <button class="quiet-button" id="saveSpreadsheetSettingsButton">連携設定を保存</button>
+        <button class="quiet-button" id="retrySyncButton">未送信ログを再送</button>
         <button class="danger-button" id="resetHistoryButton">履歴を削除</button>
         <button class="quiet-button" id="testAnimationButton">演出テスト</button>
       </div>
     </section>
+
+    <dialog id="guestDialog" class="guest-dialog">
+      <form method="dialog" id="guestForm">
+        <h2>ご主人様のお名前</h2>
+        <p>ガチャを回す前に、お名前を入力してください。</p>
+        <input type="text" id="guestNameInput" maxlength="30" autocomplete="off" inputmode="text" placeholder="例: たろう" required>
+        <menu>
+          <button type="button" id="guestCancelButton" value="cancel">戻る</button>
+          <button value="confirm" class="primary-small" autofocus>この名前で回す</button>
+        </menu>
+      </form>
+    </dialog>
 
     <dialog id="confirmDialog">
       <form method="dialog">
