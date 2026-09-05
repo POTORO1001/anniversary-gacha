@@ -820,6 +820,39 @@ body.is-screen-shaking .app {
   62% { transform: translate3d(calc(var(--x) + var(--float-x) * .7), calc(var(--y) - var(--float-y) - var(--hop)), 0) rotate(calc(var(--r) + var(--float-r) * .7)); }
 }
 
+.machine-lights { position: absolute; inset: 3% 9% 3%; pointer-events: none; }
+.machine-lights i { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #ffe6a7; opacity: .5; }
+.machine-lights i:nth-child(1) { left: 4%; top: 9%; }
+.machine-lights i:nth-child(2) { left: 1%; top: 34%; }
+.machine-lights i:nth-child(3) { left: 1%; top: 62%; }
+.machine-lights i:nth-child(4) { left: 4%; bottom: 5%; }
+.machine-lights i:nth-child(5) { right: 4%; bottom: 5%; }
+.machine-lights i:nth-child(6) { right: 1%; top: 62%; }
+.machine-lights i:nth-child(7) { right: 1%; top: 34%; }
+.machine-lights i:nth-child(8) { right: 4%; top: 9%; }
+.is-illuminated .machine-lights i { box-shadow: 0 0 8px #fff, 0 0 20px #ffe28b; animation: marqueeLight .8s ease-in-out infinite alternate; }
+.is-illuminated .machine-lights i:nth-child(2n) { animation-delay: -.2s; }
+.is-illuminated .machine-lights i:nth-child(3n) { animation-delay: -.4s; }
+.is-illuminated .machine-lights i:nth-child(4n) { animation-delay: -.6s; }
+.charge-rings { position: absolute; width: min(65vw, 420px); aspect-ratio: 1; pointer-events: none; }
+.charge-rings i { position: absolute; inset: 0; border: 3px solid #ffe6a0; border-radius: 50%; box-shadow: 0 0 20px #f4c66e, inset 0 0 15px #f4c66e; opacity: 0; }
+.focus-layer.is-charging .charge-rings i { animation: chargeRing 1.2s ease-out infinite; }
+.focus-layer.is-charging .charge-rings i:nth-child(2) { animation-delay: -.4s; }
+.focus-layer.is-charging .charge-rings i:nth-child(3) { animation-delay: -.8s; }
+.focus-capsule.is-charging { opacity: 1; }
+.focus-capsule.is-held { opacity: 1; animation: none; transform: scale(1.08); filter: drop-shadow(0 0 32px #ffe099); }
+.reveal-burst { position: absolute; width: min(110vw, 900px); aspect-ratio: 1; opacity: 0; pointer-events: none; background: repeating-conic-gradient(#ffe7a9 0deg 3deg, transparent 3deg 18deg); border-radius: 50%; }
+.is-revealing .reveal-burst { animation: revealBurst 1.15s ease-out forwards; }
+.focus-maid img, .focus-placeholder { position: relative; z-index: 1; }
+.focus-rays { background: repeating-conic-gradient(#ffd66699 0deg 8deg, transparent 8deg 20deg); }
+.focus-message::before, .focus-message::after { content: "✦"; display: inline-block; color: #ffe5a2; margin: 0 8px; font-size: 24px; }
+.focus-message.is-showing::before, .focus-message.is-showing::after { animation: winnerSparkle .7s ease-in-out 2 alternate; }
+.focus-message { overflow-wrap: anywhere; }
+@keyframes marqueeLight { from { opacity: .35; transform: scale(.8); } to { opacity: 1; transform: scale(1.2); } }
+@keyframes chargeRing { from { opacity: .85; transform: scale(.4); } to { opacity: 0; transform: scale(1.4); } }
+@keyframes revealBurst { 0% { opacity: 0; transform: scale(.15) rotate(-15deg); } 25% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4) rotate(20deg); } }
+@keyframes winnerSparkle { from { opacity: .5; transform: scale(.7) rotate(-15deg); } to { opacity: 1; transform: scale(1.2) rotate(15deg); } }
+
 @keyframes capsuleMix {
   0% { transform: translate3d(var(--x), var(--y), 0) rotate(var(--r)); }
   30% { transform: translate3d(calc(var(--x) + var(--mix-x)), calc(var(--y) - var(--mix-y)), 0) rotate(calc(var(--r) + var(--mix-r))); }

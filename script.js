@@ -262,6 +262,7 @@
     playSound("gacha_start");
     resetAnimationClass(els.machineHandle, "is-turning");
     resetAnimationClass(els.gachaMachine, "is-shaking");
+    els.gachaMachine.classList.add("is-illuminated");
     els.capsuleField.classList.add("is-mixing");
     await wait(1480);
     playSound("click");
@@ -272,6 +273,7 @@
     await wait(320);
     els.capsuleField.classList.remove("is-mixing");
     els.gachaMachine.classList.remove("is-shaking");
+    els.gachaMachine.classList.remove("is-illuminated");
   }
 
   async function playCapsuleDropAnimation() {
@@ -290,22 +292,28 @@
     resetAnimationClass(els.focusCapsule, "is-entering");
     await wait(460);
     els.focusCapsule.classList.add("is-charging");
+    els.focusLayer.classList.add("is-charging");
     emitParticles(18, "ring");
     playSound("sparkle");
     await wait(720);
     document.body.classList.add("is-screen-shaking");
     await wait(240);
     document.body.classList.remove("is-screen-shaking");
+    els.focusCapsule.classList.remove("is-charging");
+    els.focusCapsule.classList.add("is-held");
     playSound("charge");
     await wait(500);
   }
 
   async function playCapsuleOpenAnimation() {
     els.focusCapsule.classList.remove("is-charging");
+    els.focusCapsule.classList.remove("is-held");
+    els.focusLayer.classList.remove("is-charging");
+    els.focusLayer.classList.add("is-revealing");
     els.focusCapsule.classList.add("is-open");
     resetAnimationClass(els.flash, "is-active");
     playSound("capsule_open");
-    emitParticles(42, "burst");
+    emitParticles(48, "burst");
     await wait(360);
   }
 
@@ -317,6 +325,7 @@
     emitParticles(30, "fall");
     await wait(620);
     resetAnimationClass(els.focusMessage, "is-showing");
+    emitParticles(20, "fall");
     await wait(900);
   }
 
@@ -497,7 +506,7 @@
       els.machineHandle, els.gachaMachine, els.dropCapsule, els.focusCapsule,
       els.focusMaid, els.focusMessage, els.flash
     ].forEach((el) => el.className = el.className.replace(/\bis-[\w-]+/g, "").trim());
-    els.focusLayer.classList.remove("is-active");
+    els.focusLayer.classList.remove("is-active", "is-charging", "is-revealing");
     els.capsuleField.classList.remove("is-mixing");
     els.skipButton.classList.remove("is-visible");
     document.body.classList.remove("is-screen-shaking");
@@ -540,7 +549,7 @@
   }
 
   function emitParticles(count, mode) {
-    const limit = Math.min(count, 48);
+    const limit = Math.max(0, Math.min(count, 64 - els.particleLayer.childElementCount));
     const types = ["heart", "star", "confetti"];
     for (let i = 0; i < limit; i += 1) {
       const p = document.createElement("i");
@@ -550,14 +559,16 @@
       const centerY = mode === "fall" ? random(-4, 30) : random(38, 58);
       p.style.setProperty("--x", `${centerX}%`);
       p.style.setProperty("--y", `${centerY}%`);
-      p.style.setProperty("--dx", `${random(-220, 220)}px`);
-      p.style.setProperty("--dy", `${mode === "fall" ? random(250, 620) : random(-220, 230)}px`);
+      const angle = (i / Math.max(1, limit)) * Math.PI * 2;
+      const radius = Math.min(els.app.clientWidth * .55, 360);
+      p.style.setProperty("--dx", `${mode === "burst" ? Math.cos(angle) * radius : random(-160, 160)}px`);
+      p.style.setProperty("--dy", `${mode === "fall" ? random(250, 620) : Math.sin(angle) * radius}px`);
       p.style.setProperty("--rot", `${random(-540, 540)}deg`);
       p.style.setProperty("--size", `${random(9, 24)}px`);
-      p.style.setProperty("--life", `${random(.8, 1.7)}s`);
+      p.style.setProperty("--life", `${random(1.2, 2.2)}s`);
       p.style.setProperty("--color", ["#fff", "#ffd94d", "#ff6fa8", "#8edbff"][i % 4]);
       els.particleLayer.appendChild(p);
-      window.setTimeout(() => p.remove(), 1800);
+      p.addEventListener("animationend", () => p.remove(), { once: true });
     }
   }
 
@@ -672,7 +683,8 @@
       } else if (name === "sparkle") {
         [880, 1175, 1568].forEach((freq, index) => playTone(ctx, now + index * .07, .18, freq, freq * 1.25, "sine", .1));
       } else if (name === "result") {
-        [523, 659, 784, 1046].forEach((freq, index) => playTone(ctx, now + index * .09, .22, freq, freq, "triangle", .12));
+        [523, 659, 784, 1046, 1318].forEach((freq, index) => playTone(ctx, now + index * .10, .3, freq, freq, "triangle", .10));
+        [523, 659, 784, 1046].forEach(freq => playTone(ctx, now + .55, .65, freq, freq, "sine", .055));
       }
     } catch {}
   }
