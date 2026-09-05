@@ -4,6 +4,11 @@ const GOODS_SPREADSHEET_ID = "1KXxFLRzHtEj1qSJ1HWDhPts-vjmzQe2EV1aLRzNhq9A";
 const PASSPORT_ORIGIN = "https://potoro-passport.vercel.app";
 const GOODS_HEADERS = ["管理ID", "対象区分", "会員番号", "ハンドルネーム", "グッズ名", "数量", "メモ", "ステータス", "登録日", "受取日", "同期状態", "同期日時", "エラー内容"];
 
+function authorizePassportIntegration() {
+  UrlFetchApp.fetch(PASSPORT_ORIGIN, { muteHttpExceptions: true });
+  SpreadsheetApp.openById(GOODS_SPREADSHEET_ID).getName();
+}
+
 function property_(name) {
   const value = PropertiesService.getScriptProperties().getProperty(name);
   if (!value) throw new Error("Apps Scriptの設定が不足しています: " + name);

@@ -12,7 +12,7 @@ window.maidConfig = [
 ];
 
 window.spreadsheetConfig = {
-  enabled: false,
-  endpointUrl: "",
+  enabled: true,
+  endpointUrl: "https://script.google.com/macros/s/AKfycbwrpdCR8Wpt-GYglwer_sNOt72QfBOW2g1ra086oAIRxOd4G3kiE1S-k1N7Wz4ZvOwP/exec",
   deviceName: "iPad受付"
 };
