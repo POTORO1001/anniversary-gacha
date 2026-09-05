@@ -934,7 +934,11 @@
 
   function confirmNextGuest() {
     if (AppState.isAnimating) return;
-    if (AppState.currentHistory.length === 0) return resetToIdle();
+    if (AppState.currentHistory.length === 0) {
+      clearHistory();
+      resetToIdle();
+      return;
+    }
     if (typeof els.confirmDialog.showModal === "function") {
       els.confirmDialog.showModal();
     } else if (confirm("現在のガチャ履歴を削除して、次のご主人様のガチャを開始しますか？")) {

@@ -103,6 +103,8 @@ button:disabled {
 .hero-title strong span { font-size: 15px; font-weight: 600; }
 
 .machine-stage {
+  position: relative;
+  contain: size;
   display: grid;
   place-items: center;
   width: 100%;
@@ -112,7 +114,9 @@ button:disabled {
 
 .gacha-machine {
   position: relative;
-  height: 100%;
+  height: max(0px, calc(100% - 36px));
+  min-height: 0;
+  min-width: 0;
   max-height: 620px;
   max-width: 100%;
   width: auto;
@@ -292,7 +296,8 @@ button:disabled {
 }
 
 .idle-footer {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -306,6 +311,16 @@ button:disabled {
 
 .idle-footer p {
   margin: 0 0 5px;
+}
+
+.idle-footer .next-guest-help {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #526b60;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 #guestNameLabel {

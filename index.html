@@ -47,7 +47,8 @@
           <p id="guestNameLabel">ご主人様: 未入力</p>
           <p id="drawCount">今回のガチャ: 0回</p>
         </div>
-        <button class="quiet-button" id="nextGuestButton">次のご主人様</button>
+        <button class="quiet-button" id="nextGuestButton" aria-describedby="nextGuestHelp">次のご主人様</button>
+        <p class="next-guest-help" id="nextGuestHelp">別のご主人様に交代するときに押してください。お名前と画面の履歴をリセットします。同じ方が続けて回す場合は不要です。</p>
       </footer>
       <aside class="history-panel" id="historyPanel" aria-label="履歴">
         <h2>今回のコレクション</h2>
