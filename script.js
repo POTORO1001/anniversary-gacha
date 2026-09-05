@@ -3,6 +3,9 @@
 
   const STORAGE_HISTORY = "maidGachaHistory";
   const STORAGE_SOUND = "maidGachaSound";
+  const STORAGE_BGM = "maidGachaBgm";
+  const STORAGE_BGM_VOLUME = "maidGachaBgmVolume";
+  const bgm = { timer: null, gain: null, voices: new Set(), step: 0, nextTime: 0, unlocked: false };
   const STORAGE_SKIP = "maidGachaSkip";
   const STORAGE_GUEST_NAME = "maidGachaGuestName";
   const STORAGE_PENDING_LOGS = "maidGachaPendingSpreadsheetLogs";
@@ -38,6 +41,8 @@
     skipRequested: false,
     skipAvailable: true,
     soundEnabled: true,
+    bgmEnabled: true,
+    bgmVolume: .25,
     spreadsheetEnabled: false,
     spreadsheetEndpointUrl: "",
     deviceName: "",
@@ -56,6 +61,9 @@
     AppState.currentGuestName = localStorage.getItem(STORAGE_GUEST_NAME) || "";
     AppState.pendingLogs = loadPendingLogs();
     AppState.soundEnabled = localStorage.getItem(STORAGE_SOUND) !== "off";
+    AppState.bgmEnabled = localStorage.getItem(STORAGE_BGM) !== "off";
+    const savedVolume = Number(localStorage.getItem(STORAGE_BGM_VOLUME) ?? .25);
+    AppState.bgmVolume = Number.isFinite(savedVolume) ? Math.max(0, Math.min(1, savedVolume)) : .25;
     AppState.skipAvailable = localStorage.getItem(STORAGE_SKIP) !== "off";
     loadSpreadsheetSettings();
 
@@ -76,7 +84,7 @@
       "focusMaid", "focusMaidImage", "focusPlaceholder", "focusMessage",
       "maidImage", "maidPlaceholder", "resultMessage", "historyList",
       "drawCount", "particleLayer", "flash", "skipButton", "adminTapTarget",
-      "adminPanel", "closeAdminButton", "soundToggle", "skipToggle",
+      "adminPanel", "closeAdminButton", "soundToggle", "skipToggle", "bgmToggle", "bgmVolume", "bgmVolumeLabel",
       "resetHistoryButton", "testAnimationButton", "maidCount", "adminDrawCount",
       "maidList", "confirmDialog", "orientationWarning", "guestDialog",
       "guestForm", "guestNameInput", "guestCancelButton", "guestNameLabel", "adminGuestName",
@@ -92,6 +100,26 @@
     els.skipButton.addEventListener("click", requestSkip);
     els.closeAdminButton.addEventListener("click", () => els.adminPanel.classList.remove("is-active"));
     els.soundToggle.addEventListener("change", updateSoundSetting);
+    els.bgmToggle.addEventListener("change", () => {
+      AppState.bgmEnabled = els.bgmToggle.checked;
+      localStorage.setItem(STORAGE_BGM, AppState.bgmEnabled ? "on" : "off");
+      if (AppState.bgmEnabled) startBgm();
+      else stopBgm();
+    });
+    els.bgmVolume.addEventListener("input", () => {
+      AppState.bgmVolume = Number(els.bgmVolume.value) / 100;
+      localStorage.setItem(STORAGE_BGM_VOLUME, String(AppState.bgmVolume));
+      els.bgmVolumeLabel.value = `${els.bgmVolume.value}%`;
+      if (bgm.gain) bgm.gain.gain.setTargetAtTime(AppState.bgmVolume, AppState.audioContext.currentTime, .05);
+    });
+    document.addEventListener("pointerdown", activateBgm, { passive: true });
+    document.addEventListener("keydown", activateBgm);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopBgm();
+      else if (bgm.unlocked) startBgm();
+    });
+    window.addEventListener("pagehide", stopBgm);
+    window.addEventListener("pageshow", () => { if (bgm.unlocked) startBgm(); });
     els.skipToggle.addEventListener("change", updateSkipSetting);
     els.spreadsheetToggle.addEventListener("change", updateSpreadsheetEnabled);
     els.saveSpreadsheetSettingsButton.addEventListener("click", saveSpreadsheetSettings);
@@ -386,6 +414,9 @@
     els.adminGuestName.textContent = AppState.currentGuestName || "未入力";
     els.pendingSyncCount.textContent = `${AppState.pendingLogs.length}件`;
     els.soundToggle.checked = AppState.soundEnabled;
+    els.bgmToggle.checked = AppState.bgmEnabled;
+    els.bgmVolume.value = String(Math.round(AppState.bgmVolume * 100));
+    els.bgmVolumeLabel.value = `${els.bgmVolume.value}%`;
     els.skipToggle.checked = AppState.skipAvailable;
     els.spreadsheetToggle.checked = AppState.spreadsheetEnabled;
     els.spreadsheetUrlInput.value = AppState.spreadsheetEndpointUrl;
@@ -482,9 +513,11 @@
     positions.forEach((pos, index) => {
       const capsule = document.createElement("div");
       capsule.className = "window-capsule";
+      capsule.style.left = `${pos[0]}%`;
+      capsule.style.top = `${pos[1]}%`;
       setCapsuleColors(capsule, index);
-      capsule.style.setProperty("--x", `${pos[0]}%`);
-      capsule.style.setProperty("--y", `${pos[1]}%`);
+      capsule.style.setProperty("--x", "0px");
+      capsule.style.setProperty("--y", "0px");
       capsule.style.setProperty("--r", `${random(-34, 34)}deg`);
       capsule.style.setProperty("--float-x", `${random(-9, 9)}px`);
       capsule.style.setProperty("--float-y", `${random(5, 18)}px`);
@@ -673,6 +706,81 @@
     gain.connect(ctx.destination);
     source.start(start);
     source.stop(start + duration);
+  }
+
+  function activateBgm() {
+    bgm.unlocked = true;
+    startBgm();
+  }
+
+  async function startBgm() {
+    if (!AppState.bgmEnabled || document.hidden || !bgm.unlocked || bgm.timer !== null) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      await ctx.resume();
+      if (ctx.state !== "running" || !AppState.bgmEnabled || document.hidden || bgm.timer !== null) return;
+      if (!bgm.gain) {
+        bgm.gain = ctx.createGain();
+        bgm.gain.connect(ctx.destination);
+      }
+      bgm.gain.gain.setValueAtTime(AppState.bgmVolume, ctx.currentTime);
+      bgm.step = 0;
+      bgm.nextTime = ctx.currentTime + .05;
+      scheduleBgm();
+      bgm.timer = window.setInterval(scheduleBgm, 100);
+    } catch {
+      stopBgm();
+    }
+  }
+
+  function scheduleBgm() {
+    const ctx = AppState.audioContext;
+    if (!ctx || ctx.state !== "running") return;
+    // A short look-ahead keeps the music steady without accumulating timers or voices.
+    if (bgm.nextTime < ctx.currentTime) bgm.nextTime = ctx.currentTime + .03;
+    const melody = [72, 76, 79, 76, 81, 79, 76, null, 74, 77, 81, 77, 79, 77, 74, null,
+      71, 74, 79, 74, 83, 81, 79, 77, 76, 79, 84, 79, 76, 74, 72, null];
+    const chords = [[48, 60, 64, 67], [53, 60, 65, 69], [55, 59, 62, 67], [48, 60, 64, 67]];
+    const beat = 60 / 104 / 2;
+    while (bgm.nextTime < ctx.currentTime + .25) {
+      const step = bgm.step % melody.length;
+      const chord = chords[Math.floor(step / 8)];
+      if (melody[step] !== null) playBgmNote(melody[step], bgm.nextTime, beat * 1.6, .12, "sine");
+      if (step % 4 === 0) playBgmNote(chord[0], bgm.nextTime, beat * 2.8, .09, "triangle");
+      if (step % 2 === 0) playBgmNote(chord[1 + (step / 2) % 3], bgm.nextTime, beat * 1.5, .045, "sine");
+      bgm.nextTime += beat;
+      bgm.step += 1;
+    }
+  }
+
+  function playBgmNote(midi, start, duration, volume, type) {
+    const ctx = AppState.audioContext;
+    const oscillator = ctx.createOscillator();
+    const envelope = ctx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+    envelope.gain.setValueAtTime(0, start);
+    envelope.gain.linearRampToValueAtTime(volume, start + .015);
+    envelope.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    oscillator.connect(envelope);
+    envelope.connect(bgm.gain);
+    bgm.voices.add(oscillator);
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      envelope.disconnect();
+      bgm.voices.delete(oscillator);
+    };
+    oscillator.start(start);
+    oscillator.stop(start + duration + .02);
+  }
+
+  function stopBgm() {
+    window.clearInterval(bgm.timer);
+    bgm.timer = null;
+    if (bgm.gain) bgm.gain.gain.setValueAtTime(0, AppState.audioContext.currentTime);
+    bgm.voices.forEach(voice => { try { voice.stop(); } catch {} });
+    bgm.voices.clear();
   }
 
   function updateSoundSetting() {

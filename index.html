@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f9d45c">
+  <meta name="theme-color" content="#f5f9f7">
   <title>周年記念 メイドさんアクキーガチャ</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,17 +15,20 @@
 
     <section class="screen screen-idle is-active" id="idleScreen" aria-label="ガチャ待機画面">
       <header class="hero-title" id="adminTapTarget">
-        <p>周年記念</p>
-        <h1>メイドさん<br>アクキーガチャ</h1>
-        <strong>1回 1,000円</strong>
+        <p class="anniversary-label">ANNIVERSARY COLLECTION</p>
+        <h1><span>周年記念 メイドさん</span><br>アクキーガチャ</h1>
+        <strong><span>1回</span> 1,000<span>円</span></strong>
       </header>
 
       <div class="machine-stage" aria-hidden="true">
         <div class="gacha-machine" id="gachaMachine">
           <div class="machine-body image-fallback" data-img="img/gacha/machine_body.png"></div>
+          <div class="machine-sign">MAID COLLECTION</div>
           <div class="machine-window image-fallback" data-img="img/gacha/machine_window.png">
             <div class="capsule-field" id="capsuleField"></div>
           </div>
+          <div class="machine-emblem">Anniversary</div>
+          <div class="machine-coin-slot"></div>
           <div class="machine-chute"></div>
           <div class="machine-tray"></div>
           <button class="machine-handle image-fallback" id="machineHandle" data-img="img/gacha/handle.png" tabindex="-1" aria-hidden="true">
@@ -46,11 +49,16 @@
         </div>
         <button class="quiet-button" id="nextGuestButton">次のご主人様</button>
       </footer>
+      <aside class="history-panel" id="historyPanel" aria-label="履歴">
+        <h2>今回のコレクション</h2>
+        <ol id="historyList"></ol>
+      </aside>
     </section>
 
     <section class="screen screen-result" id="resultScreen" aria-label="結果画面">
       <div class="result-rays"></div>
       <div class="result-card">
+        <p class="result-label">YOUR COLLECTION</p>
         <div class="maid-frame">
           <img id="maidImage" alt="" decoding="async">
           <div class="maid-placeholder" id="maidPlaceholder"></div>
@@ -59,11 +67,6 @@
         <button class="primary-button" id="againButton">もう一度ガチャを回す</button>
       </div>
     </section>
-
-    <aside class="history-panel" id="historyPanel" aria-label="履歴">
-      <h2>履歴</h2>
-      <ol id="historyList"></ol>
-    </aside>
 
     <div class="focus-layer" id="focusLayer" aria-hidden="true">
       <div class="focus-dim"></div>
@@ -100,6 +103,14 @@
         <label class="toggle-row">
           <input type="checkbox" id="soundToggle">
           <span>効果音 ON</span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="bgmToggle">
+          <span>BGM ON</span>
+        </label>
+        <label class="field-row">
+          <span>BGM音量 <output id="bgmVolumeLabel" for="bgmVolume">25%</output></span>
+          <input type="range" id="bgmVolume" min="0" max="100" step="5" value="25">
         </label>
         <label class="toggle-row">
           <input type="checkbox" id="skipToggle">
