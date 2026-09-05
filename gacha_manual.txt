@@ -151,6 +151,9 @@ audio/
 -----------------------
 Googleスプレッドシートに、ガチャ結果を1回ごとに集約できます。
 
+作成済みの集約先スプレッドシート:
+https://docs.google.com/spreadsheets/d/1Ksbh-pnoJqri0MKAyn0NQZUtPCnUZcWWLIuz5d-B7ys/edit
+
 送信される項目:
 - resultId
 - 日時

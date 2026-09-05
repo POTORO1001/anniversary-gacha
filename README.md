@@ -72,6 +72,12 @@ Googleスプレッドシートに `google_apps_script.gs` の内容を貼り付�
 
 送信される項目は、`resultId / 日時 / ご主人様名 / メイドID / 当選メイド / 回数 / 端末名 / UserAgent` です。通信できない場合は未送信ログとして端末に残り、管理者設定から再送できます。
 
+作成済みの集約先スプレッドシートは以下です。
+
+https://docs.google.com/spreadsheets/d/1Ksbh-pnoJqri0MKAyn0NQZUtPCnUZcWWLIuz5d-B7ys/edit
+
+詳しい設定手順は `spreadsheet_setup.txt` を確認してください。
+
 ## 演出
 
 ガチャボタン押下時に抽選結果を1回だけ確定し、演出中の連打を無効にします。ハンドル回転、内部カプセル攪拌、排出口への落下、受け皿バウンド、中央への注目、開封、アクキー登場、結果メッセージの順で再生します。
