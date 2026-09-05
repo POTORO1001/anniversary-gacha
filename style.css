@@ -314,13 +314,30 @@ button:disabled {
 }
 
 .idle-footer .next-guest-help {
-  grid-column: 1 / -1;
   margin: 0;
   color: #a52f54;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.guest-handoff-card {
+  display: grid;
+  gap: 8px;
+  max-width: 330px;
+  padding: 12px 16px;
+  border: 1px solid #d8a0b1;
+  border-radius: 8px;
+  background: #fff0f4;
+  text-align: center;
+}
+.idle-footer .guest-handoff-title { margin: 0; color: #8b2949; font-size: 16px; font-weight: 700; }
+.guest-handoff-card #nextGuestButton { width: 100%; border-color: #c78499; color: #8b2949; font-size: 16px; }
+@media (max-width: 640px) {
+  .idle-footer { grid-template-columns: minmax(0, 1fr); }
+  .guest-handoff-card { width: 100%; max-width: none; padding: 10px 12px; gap: 6px; }
+  .idle-footer > div:not(.guest-handoff-card) { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
 }
 
 #guestNameLabel {
