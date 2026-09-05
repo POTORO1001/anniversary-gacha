@@ -64,11 +64,11 @@ window.maidConfig = [
 
 ## 履歴
 
-ガチャを回す前にご主人様名の入力ポップアップを表示します。履歴は現在のご主人様分だけ `localStorage` に保存します。「次のご主人様」を押して確認すると履歴と名前を削除し、回数を0に戻します。
+ガチャを回す前にポトロパスポートの有無を確認します。お持ちの方は会員証QRを読み取って名前を確認し、お持ちでない方は従来どおり名前を入力します。同じご主人様の連続抽選では受付を繰り返しません。履歴は `localStorage` に保存します。「次のご主人様」を押して確認すると画面の履歴と会員情報・名前をリセットします。未送信ログは残ります。
 
 ## スプレッドシート連携
 
-Googleスプレッドシートに `google_apps_script.gs` の内容を貼り付けて、Apps ScriptのWebアプリとしてデプロイします。発行されたWebアプリURLを、管理者設定の「送信先URL」に貼り付けて「スプレッドシート連携 ON」にしてください。
+ガチャ結果用Apps Scriptに `google_apps_script.gs` と `passport_bridge.gs` の両方を追加して、Webアプリとしてデプロイします。会員連携のサーバー設定と店舗端末の受付キーが必要です。手順は `passport_setup.txt` を確認してください。GitHubへのプッシュだけではApps Scriptは更新されません。
 
 送信される項目は、`resultId / 日時 / ご主人様名 / メイドID / 当選メイド / 回数 / 端末名 / UserAgent` です。通信できない場合は未送信ログとして端末に残り、管理者設定から再送できます。
 
@@ -77,6 +77,14 @@ Googleスプレッドシートに `google_apps_script.gs` の内容を貼り付�
 https://docs.google.com/spreadsheets/d/1Ksbh-pnoJqri0MKAyn0NQZUtPCnUZcWWLIuz5d-B7ys/edit
 
 詳しい設定手順は `spreadsheet_setup.txt` を確認してください。
+
+## ポトロパスポート
+
+会員の当選グッズは管理台帳の「グッズ管理」に数量1・未受取で追加し、既存のパスポート同期APIで反映します。受取済み・取消は既存運用に従います。会員でない方はガチャ結果のみ記録します。登録IDは抽選IDから決めるため、通信失敗後に再送してもグッズは重複しません。サーバーが成功を返すまで未送信ログを保持します。
+
+QR読み取りには同梱した [jsQR 1.4.0](https://github.com/cozmo/jsQR) を利用します。ライセンスは `vendor/jsQR-LICENSE.txt` にあります。カメラはHTTPSで開き、利用を許可してください。QR画像の選択にも対応します。会員QRの識別子はサーバーで照合し、ブラウザにはサーバーの秘密キーを配信しません。
+
+サーバー処理の回帰テスト: `node --test tests/passport-bridge.test.cjs`。実際のQR画像を使うブラウザテストは `tests/passport-ui.cjs`（`passport_setup.txt` 参照）。本番の同期確認にはApps Scriptの設定・再デプロイが必要です。
 
 ## 演出
 

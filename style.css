@@ -808,6 +808,20 @@ button:focus-visible { outline: 3px solid #367d68; outline-offset: 5px; }
   text-align: left;
 }
 
+.passport-dialog { max-height: 90dvh; overflow-y: auto; }
+.passport-dialog h2 { font-size: 24px; line-height: 1.4; }
+.passport-actions { display: grid; gap: 12px; margin-top: 20px; }
+.passport-actions button, .passport-file { min-height: 52px; border-radius: 6px; text-align: center; }
+.passport-file { display: grid; place-items: center; cursor: pointer; }
+.passport-file input { width: 100%; max-width: 100%; margin-top: 6px; font-size: 14px; }
+#passportVideo { width: 100%; max-height: 32dvh; object-fit: cover; background: #203b34; border-radius: 6px; }
+#passportVideo[hidden], #passportMemberPreview[hidden] { display: none; }
+#passportMemberPreview { border-top: 1px solid #ccdbd1; margin-top: 18px; padding-top: 12px; }
+#passportMemberName { font-size: 24px; overflow-wrap: anywhere; }
+#passportScanStatus { color: #8b2949; font-size: 15px; }
+#resultSyncStatus { margin: 0; max-width: 480px; font-size: 14px; text-align: center; line-height: 1.5; }
+#resultSyncStatus:empty { display: none; }
+
 .orientation-warning {
   position: absolute;
   inset: 0;

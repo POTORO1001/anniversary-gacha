@@ -5,29 +5,38 @@ function doPost(e) {
   lock.waitLock(10000);
 
   try {
-    const sheet = getResultSheet_();
     const payload = parsePayload_(e);
+    if (payload.action === "passport.lookup") {
+      requireKioskKey_(payload.kioskKey);
+      return json_({ ok: true, member: lookupPassportMember_(payload.qrIdentifier) });
+    }
+    const sheet = getResultSheet_();
 
-    if (!payload.resultId) {
+    if (!/^[A-Za-z0-9_-]{8,100}$/.test(String(payload.resultId || ""))) {
       throw new Error("resultId is required");
     }
 
-    if (isDuplicate_(sheet, payload.resultId)) {
-      return json_({ ok: true, duplicate: true });
+    let member = null;
+    if (payload.memberToken) {
+      requireKioskKey_(payload.kioskKey);
+      member = verifyMemberToken_(payload.memberToken);
+      const maid = getGachaMaid_(payload.maidId);
+      payload.maidName = maid.name;
+      payload.guestName = member.displayName;
     }
-
-    sheet.appendRow([
+    const duplicate = isDuplicate_(sheet, payload.resultId);
+    if (!duplicate) sheet.appendRow([
       payload.resultId,
       payload.timestamp || new Date().toISOString(),
-      payload.guestName || "",
-      payload.maidId || "",
-      payload.maidName || "",
+      safeCell_(payload.guestName),
+      safeCell_(payload.maidId),
+      safeCell_(payload.maidName),
       payload.drawNumber || "",
-      payload.deviceName || "",
-      payload.userAgent || ""
+      safeCell_(payload.deviceName),
+      safeCell_(payload.userAgent)
     ]);
-
-    return json_({ ok: true });
+    if (member) registerGachaGoods_(payload, member);
+    return json_({ ok: true, duplicate: duplicate, goodsSynced: Boolean(member) });
   } catch (error) {
     return json_({ ok: false, error: String(error && error.message ? error.message : error) });
   } finally {

@@ -29,10 +29,14 @@
     result: "audio/result.mp3"
   };
   const missingSoundFiles = new Set();
+  const sendingResults = new Set();
 
   const AppState = {
     screen: "idle",
     isAnimating: false,
+    isReceiving: false,
+    receptionReady: false,
+    currentMember: null,
     selectedMaid: null,
     resultSaved: false,
     currentGuestName: "",
@@ -89,7 +93,7 @@
       "maidList", "confirmDialog", "orientationWarning", "guestDialog",
       "guestForm", "guestNameInput", "guestCancelButton", "guestNameLabel", "adminGuestName",
       "spreadsheetToggle", "spreadsheetUrlInput", "deviceNameInput",
-      "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount"
+      "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount", "passportKeyInput", "resultSyncStatus"
     ].forEach((id) => { els[id] = $(id); });
   }
 
@@ -124,6 +128,9 @@
     els.spreadsheetToggle.addEventListener("change", updateSpreadsheetEnabled);
     els.saveSpreadsheetSettingsButton.addEventListener("click", saveSpreadsheetSettings);
     els.retrySyncButton.addEventListener("click", retryPendingLogs);
+    els.passportKeyInput.value = sessionStorage.getItem("maidGachaPassportKey") || "";
+    els.passportKeyInput.addEventListener("input", () => sessionStorage.setItem("maidGachaPassportKey", els.passportKeyInput.value.trim()));
+    window.addEventListener("online", retryPendingLogs);
     els.resetHistoryButton.addEventListener("click", confirmNextGuest);
     els.guestCancelButton.addEventListener("click", () => els.guestDialog.close("cancel"));
     els.guestForm.addEventListener("submit", (event) => {
@@ -202,10 +209,34 @@
   }
 
   async function startGacha() {
-    if (AppState.isAnimating || isLandscape()) return;
+    if (AppState.isAnimating || AppState.isReceiving || isLandscape()) return;
     unlockAudio();
-    const guestName = await ensureGuestName();
-    if (!guestName) return;
+    AppState.isReceiving = true;
+    lockControls();
+    try {
+      if (!AppState.receptionReady) {
+        const reception = await window.PassportGacha.choose({
+          enabled: AppState.spreadsheetEnabled,
+          endpoint: AppState.spreadsheetEndpointUrl,
+          key: els.passportKeyInput.value.trim()
+        });
+        if (!reception) return;
+        AppState.currentMember = reception.kind === "member" ? reception : null;
+        if (AppState.currentMember) saveGuestName(reception.displayName);
+        else {
+          AppState.currentGuestName = "";
+          if (!await ensureGuestName()) return;
+        }
+        AppState.receptionReady = true;
+      }
+    } catch (error) {
+      alert(error.message || "受付を完了できませんでした。");
+      return;
+    } finally {
+      AppState.isReceiving = false;
+      unlockControls();
+    }
+    if (isLandscape()) return;
     const selectedMaid = drawMaid();
     if (!selectedMaid) {
       alert("ガチャに登録されているメイドさんがいません。\nconfig.jsを確認してください。");
@@ -359,6 +390,7 @@
     const result = {
       resultId: createResultId(),
       guestName: AppState.currentGuestName || "未入力",
+      member: AppState.currentMember ? { ...AppState.currentMember } : null,
       id: maid.id,
       name: maid.name,
       image: maid.image,
@@ -395,6 +427,8 @@
     AppState.currentHistory = [];
     AppState.resultSaved = false;
     AppState.currentGuestName = "";
+    AppState.currentMember = null;
+    AppState.receptionReady = false;
     localStorage.removeItem(STORAGE_HISTORY);
     localStorage.removeItem(STORAGE_GUEST_NAME);
     renderHistory();
@@ -422,6 +456,10 @@
     els.adminDrawCount.textContent = `${AppState.currentHistory.length}回`;
     els.adminGuestName.textContent = AppState.currentGuestName || "未入力";
     els.pendingSyncCount.textContent = `${AppState.pendingLogs.length}件`;
+    const latest = AppState.currentHistory[AppState.currentHistory.length - 1];
+    els.resultSyncStatus.textContent = latest?.member
+      ? latest.synced ? "グッズ管理・パスポートに登録しました（未受取）。" : "グッズ記録を送信待ちです。スタッフは管理者設定から再送できます。"
+      : "";
     els.soundToggle.checked = AppState.soundEnabled;
     els.bgmToggle.checked = AppState.bgmEnabled;
     els.bgmVolume.value = String(Math.round(AppState.bgmVolume * 100));
@@ -859,7 +897,7 @@
   }
 
   function queueSpreadsheetResult(result) {
-    if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl) {
+    if (!result.member && (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl)) {
       renderAdmin();
       return;
     }
@@ -896,6 +934,8 @@
 
   async function sendSpreadsheetResult(result) {
     if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl || !result) return;
+    if (sendingResults.has(result.resultId)) return;
+    sendingResults.add(result.resultId);
     const payload = {
       resultId: result.resultId,
       timestamp: result.at,
@@ -904,21 +944,18 @@
       maidName: result.name || "",
       drawNumber: result.drawNumber || "",
       deviceName: result.deviceName || AppState.deviceName || "",
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
+      memberToken: result.member?.memberToken || ""
     };
 
     try {
-      const body = new URLSearchParams();
-      body.set("payload", JSON.stringify(payload));
-      await fetch(AppState.spreadsheetEndpointUrl, {
-        method: "POST",
-        mode: "no-cors",
-        body
-      });
+      const response = await window.PassportGacha.request(AppState.spreadsheetEndpointUrl, els.passportKeyInput.value.trim(), payload);
+      if (result.member && response.goodsSynced !== true) throw new Error("グッズ同期の完了を確認できませんでした。");
       markResultSynced(result.resultId);
     } catch (error) {
-      console.warn("Spreadsheet sync failed", error);
+      console.warn("Spreadsheet sync failed", error.message);
     } finally {
+      sendingResults.delete(result.resultId);
       renderAdmin();
     }
   }
@@ -945,7 +982,7 @@
   }
 
   function confirmNextGuest() {
-    if (AppState.isAnimating) return;
+    if (AppState.isAnimating || AppState.isReceiving) return;
     if (AppState.currentHistory.length === 0) {
       clearHistory();
       resetToIdle();

@@ -69,6 +69,7 @@
           <div class="maid-placeholder" id="maidPlaceholder"></div>
         </div>
         <h2 id="resultMessage">メイドさんが当たりました！</h2>
+        <p id="resultSyncStatus" role="status" aria-live="polite"></p>
         <button class="primary-button" id="againButton">もう一度ガチャを回す</button>
       </div>
     </section>
@@ -136,6 +137,10 @@
           <input type="text" id="deviceNameInput" placeholder="iPad受付">
         </label>
         <button class="quiet-button" id="saveSpreadsheetSettingsButton">連携設定を保存</button>
+        <label class="field-row">
+          <span>会員受付キー</span>
+          <input type="password" id="passportKeyInput" autocomplete="off" placeholder="店舗端末用の受付キー">
+        </label>
         <button class="quiet-button" id="retrySyncButton">未送信ログを再送</button>
         <button class="danger-button" id="resetHistoryButton">履歴を削除</button>
         <button class="quiet-button" id="testAnimationButton">演出テスト</button>
@@ -154,6 +159,32 @@
       </form>
     </dialog>
 
+    <dialog id="passportChoiceDialog" class="passport-dialog">
+      <form method="dialog">
+        <h2>ポトロパスポートを<br>お持ちですか？</h2>
+        <div class="passport-actions">
+          <button value="member" class="primary-small">持っている</button>
+          <button value="guest" class="quiet-button">持っていない</button>
+        </div>
+        <menu><button value="cancel">戻る</button></menu>
+      </form>
+    </dialog>
+    <dialog id="passportScanDialog" class="passport-dialog">
+      <h2>会員証QRコード</h2>
+      <video id="passportVideo" muted autoplay playsinline hidden></video>
+      <p id="passportScanStatus" role="status" aria-live="polite"></p>
+      <div class="passport-actions">
+        <button type="button" class="primary-small" id="passportCameraButton">カメラで読み取る</button>
+        <label class="quiet-button passport-file">QR画像を選ぶ<input type="file" id="passportImageInput" accept="image/*"></label>
+      </div>
+      <div id="passportMemberPreview" hidden>
+        <p id="passportMemberName"></p>
+        <p id="passportMemberNumber"></p>
+        <button type="button" id="passportConfirmButton" class="primary-small">このご主人様で回す</button>
+      </div>
+      <menu><button type="button" id="passportScanCancel">戻る</button></menu>
+    </dialog>
+
     <dialog id="confirmDialog">
       <form method="dialog">
         <p>現在のガチャ履歴を削除して、次のご主人様のガチャを開始しますか？</p>
@@ -165,6 +196,8 @@
     </dialog>
   </main>
   <script src="config.js"></script>
+  <script src="vendor/jsQR.js"></script>
+  <script src="passport.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
