@@ -66,6 +66,8 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#skipButton.is-visible').click();
     await page.locator('#resultScreen.is-active').waitFor();
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('maidGachaHistory'))[0].synced);
+    assert.equal(await page.locator('#againButton').textContent(), '同じご主人様がもう一度ガチャを回す');
+    assert.equal(await page.locator('#endButton').textContent(), '終了する');
     assert.equal(sent[2].memberToken, '');
     assert.equal(sent[2].guestName, '非会員テスト');
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory')).length), 1);
@@ -75,6 +77,10 @@ const { pathToFileURL } = require('node:url');
       const bottom = await page.locator('#againButton').evaluate(el => el.getBoundingClientRect().bottom);
       assert(bottom <= height, `Result button overflows ${width}x${height}: ${bottom}`);
     }
+    await page.locator('#endButton').click();
+    assert.equal(await page.locator('#app').getAttribute('data-screen'), 'idle');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory') || '[]').length), 0);
+    assert.equal(await page.locator('#guestNameLabel').textContent(), 'ご主人様: 未入力');
     assert.deepEqual(errors, []);
     console.log('PASS: real QR decoding, member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
   } finally { await browser.close(); }

@@ -83,7 +83,7 @@
 
   function cacheElements() {
     [
-      "app", "idleScreen", "resultScreen", "gachaButton", "againButton",
+      "app", "idleScreen", "resultScreen", "gachaButton", "againButton", "endButton",
       "nextGuestButton", "machineHandle", "gachaMachine", "capsuleField",
       "dropCapsule", "focusLayer", "focusCapsule", "capsuleTop", "capsuleBottom",
       "focusMaid", "focusMaidImage", "focusPlaceholder", "focusMessage",
@@ -102,6 +102,7 @@
   function bindEvents() {
     els.gachaButton.addEventListener("click", startGacha);
     els.againButton.addEventListener("click", resetToIdle);
+    els.endButton.addEventListener("click", endGuestSession);
     els.nextGuestButton.addEventListener("click", confirmNextGuest);
     els.skipButton.addEventListener("click", requestSkip);
     els.closeAdminButton.addEventListener("click", () => els.adminPanel.classList.remove("is-active"));
@@ -541,20 +542,29 @@
     renderHistory();
   }
 
+  function endGuestSession() {
+    if (AppState.isAnimating || AppState.isReceiving) return;
+    clearHistory();
+    resetToIdle();
+  }
+
   function lockControls() {
     els.gachaButton.disabled = true;
     els.againButton.disabled = true;
+    els.endButton.disabled = true;
     els.nextGuestButton.disabled = true;
   }
 
   function unlockControls() {
     els.gachaButton.disabled = false;
     els.againButton.disabled = false;
+    els.endButton.disabled = false;
     els.nextGuestButton.disabled = false;
   }
 
   function unlockResultControls() {
     els.againButton.disabled = false;
+    els.endButton.disabled = false;
     els.nextGuestButton.disabled = false;
   }
 

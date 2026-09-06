@@ -613,9 +613,32 @@ button:disabled {
 .result-label,
 .screen-result h2,
 #resultSyncStatus,
-#againButton {
+.result-actions {
   position: relative;
   z-index: 2;
+}
+
+.result-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(112px, .75fr);
+  align-items: stretch;
+  gap: 10px;
+  width: min(100%, 620px);
+}
+
+.result-actions .primary-button,
+.result-end-button {
+  width: 100%;
+  min-height: 72px;
+  height: 100%;
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.result-end-button {
+  border: 2px solid #b7cbc1;
+  color: var(--deep);
+  background: rgba(255, 255, 255, .94);
 }
 
 .screen-result h2 {
