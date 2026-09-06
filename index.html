@@ -141,6 +141,11 @@
           <span>会員受付キー</span>
           <input type="password" id="passportKeyInput" autocomplete="off" placeholder="店舗端末用の受付キー">
         </label>
+        <div class="passport-key-actions">
+          <button type="button" class="quiet-button" id="savePassportKeyButton">この端末に保存</button>
+          <button type="button" class="danger-button" id="clearPassportKeyButton">保存を削除</button>
+        </div>
+        <p class="setting-status" id="passportKeyStatus" role="status" aria-live="polite"></p>
         <button class="quiet-button" id="retrySyncButton">未送信ログを再送</button>
         <button class="danger-button" id="resetHistoryButton">履歴を削除</button>
         <button class="quiet-button" id="testAnimationButton">演出テスト</button>

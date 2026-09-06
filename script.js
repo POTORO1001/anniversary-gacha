@@ -10,6 +10,7 @@
   const STORAGE_GUEST_NAME = "maidGachaGuestName";
   const STORAGE_PENDING_LOGS = "maidGachaPendingSpreadsheetLogs";
   const STORAGE_SHEET_SETTINGS = "maidGachaSpreadsheetSettings";
+  const STORAGE_PASSPORT_KEY = "maidGachaPassportKey";
   const capsulePalette = [
     ["#f54d7f", "#ffd94d"],
     ["#4ab6ff", "#fff4f7"],
@@ -93,7 +94,8 @@
       "maidList", "confirmDialog", "orientationWarning", "guestDialog",
       "guestForm", "guestNameInput", "guestCancelButton", "guestNameLabel", "adminGuestName",
       "spreadsheetToggle", "spreadsheetUrlInput", "deviceNameInput",
-      "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount", "passportKeyInput", "resultSyncStatus"
+      "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount", "passportKeyInput", "resultSyncStatus",
+      "savePassportKeyButton", "clearPassportKeyButton", "passportKeyStatus"
     ].forEach((id) => { els[id] = $(id); });
   }
 
@@ -128,8 +130,16 @@
     els.spreadsheetToggle.addEventListener("change", updateSpreadsheetEnabled);
     els.saveSpreadsheetSettingsButton.addEventListener("click", saveSpreadsheetSettings);
     els.retrySyncButton.addEventListener("click", retryPendingLogs);
-    els.passportKeyInput.value = sessionStorage.getItem("maidGachaPassportKey") || "";
-    els.passportKeyInput.addEventListener("input", () => sessionStorage.setItem("maidGachaPassportKey", els.passportKeyInput.value.trim()));
+    els.passportKeyInput.value = localStorage.getItem(STORAGE_PASSPORT_KEY)
+      || sessionStorage.getItem(STORAGE_PASSPORT_KEY)
+      || "";
+    els.passportKeyInput.addEventListener("input", () => {
+      sessionStorage.setItem(STORAGE_PASSPORT_KEY, els.passportKeyInput.value.trim());
+      renderPassportKeyStatus();
+    });
+    els.savePassportKeyButton.addEventListener("click", savePassportKey);
+    els.clearPassportKeyButton.addEventListener("click", clearPassportKey);
+    renderPassportKeyStatus();
     window.addEventListener("online", retryPendingLogs);
     els.resetHistoryButton.addEventListener("click", confirmNextGuest);
     els.guestCancelButton.addEventListener("click", () => els.guestDialog.close("cancel"));
@@ -206,6 +216,38 @@
     renderHistory();
     renderAdmin();
     return normalized;
+  }
+
+  function savePassportKey() {
+    const key = els.passportKeyInput.value.trim();
+    if (!key) {
+      els.passportKeyStatus.textContent = "会員受付キーを入力してください。";
+      els.passportKeyInput.focus();
+      return;
+    }
+    localStorage.setItem(STORAGE_PASSPORT_KEY, key);
+    sessionStorage.setItem(STORAGE_PASSPORT_KEY, key);
+    renderPassportKeyStatus("この端末に保存しました。次回起動時も自動入力されます。");
+  }
+
+  function clearPassportKey() {
+    localStorage.removeItem(STORAGE_PASSPORT_KEY);
+    sessionStorage.removeItem(STORAGE_PASSPORT_KEY);
+    els.passportKeyInput.value = "";
+    renderPassportKeyStatus("保存した会員受付キーを削除しました。");
+  }
+
+  function renderPassportKeyStatus(message) {
+    const savedKey = localStorage.getItem(STORAGE_PASSPORT_KEY) || "";
+    const inputKey = els.passportKeyInput.value.trim();
+    const isSaved = Boolean(savedKey) && inputKey === savedKey;
+    const defaultMessage = savedKey && inputKey !== savedKey
+      ? "入力内容はまだこの端末に保存されていません。"
+      : (isSaved ? "この端末に保存済みです。" : "未保存です。入力内容はタブを閉じると消えます。");
+    els.passportKeyStatus.textContent = message
+      || defaultMessage;
+    els.passportKeyStatus.classList.toggle("is-saved", isSaved);
+    els.clearPassportKeyButton.disabled = !savedKey && !inputKey;
   }
 
   async function startGacha() {

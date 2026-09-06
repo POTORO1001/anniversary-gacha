@@ -781,6 +781,28 @@ button:disabled {
 .field-row input[type="range"] { padding: 0; border: 0; accent-color: var(--hot-pink); box-shadow: none; }
 #bgmVolumeLabel { color: #6a8178; font-weight: 500; margin-left: 8px; }
 
+.passport-key-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.passport-key-actions button {
+  min-width: 0;
+}
+
+.setting-status {
+  min-height: 22px;
+  margin: 7px 2px 14px;
+  color: #6a8178;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.setting-status.is-saved {
+  color: #16704e;
+}
+
 dialog {
   width: min(86vw, 520px);
   border: 0;
