@@ -583,16 +583,39 @@ button:disabled {
   position: relative;
   z-index: 1;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
   place-items: center;
-  gap: 22px;
+  gap: clamp(8px, 1.8vh, 18px);
   width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
 .maid-frame {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: min(78vw, 560px);
-  height: min(54vh, 660px);
+  height: 100%;
+  max-height: min(54dvh, 660px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.maid-frame img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.result-label,
+.screen-result h2,
+#resultSyncStatus,
+#againButton {
+  position: relative;
+  z-index: 2;
 }
 
 .screen-result h2 {
