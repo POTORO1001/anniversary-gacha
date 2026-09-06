@@ -46,7 +46,7 @@ const { pathToFileURL } = require('node:url');
     await page.waitForTimeout(300);
     const pending = await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaPendingSpreadsheetLogs')));
     assert.equal(pending.length, 1); assert.equal(pending[0].member.memberNumber, 'P000001');
-    assert.match(await page.locator('#resultSyncStatus').textContent(), /送信待ち/);
+    assert.equal(await page.locator('#resultSyncStatus').textContent(), '');
     await page.locator('#againButton').click();
     await page.locator('#nextGuestButton').click();
     await page.locator('#confirmDialog button[value="confirm"]').click();

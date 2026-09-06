@@ -500,7 +500,7 @@
     els.pendingSyncCount.textContent = `${AppState.pendingLogs.length}件`;
     const latest = AppState.currentHistory[AppState.currentHistory.length - 1];
     els.resultSyncStatus.textContent = latest?.member
-      ? latest.synced ? "グッズ管理・パスポートに登録しました（未受取）。" : "グッズ記録を送信待ちです。スタッフは管理者設定から再送できます。"
+      ? latest.synced ? "グッズ管理・パスポートに登録しました（未受取）。" : ""
       : "";
     els.soundToggle.checked = AppState.soundEnabled;
     els.bgmToggle.checked = AppState.bgmEnabled;
