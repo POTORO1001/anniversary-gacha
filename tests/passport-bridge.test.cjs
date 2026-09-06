@@ -45,7 +45,7 @@ function setup() {
   for (const file of ['passport_bridge.gs','google_apps_script.gs']) vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'), ctx);
   const post = payload => ctx.doPost({ parameter: { payload: JSON.stringify(payload) } });
   const member = () => post({ action:'passport.lookup', kioskKey:key, qrIdentifier:'test-qr' }).member;
-  const payload = () => ({ resultId:crypto.randomUUID(), memberToken:member().memberToken, kioskKey:key, maidId:'maid01', maidName:'tampered client name', guestName:'tampered client guest' });
+  const payload = () => ({ resultId:crypto.randomUUID(), memberToken:member().memberToken, kioskKey:key, maidId:'meru', maidName:'tampered client name', guestName:'tampered client guest' });
   return {post,member,payload,log,goods,calls,setFail:v=>{fail=v;}};
 }
 
@@ -56,7 +56,7 @@ test('member lookup requires kiosk key; signed tokens reject tampering',()=>{
 test('member result uses server names and saves exactly once',()=>{
   const s=setup(), p=s.payload(); assert.equal(s.post(p).ok,true); assert.equal(s.post(p).ok,true);
   assert.equal(s.goods.rows.length,2); assert.equal(s.log.rows.length,2); assert.equal(s.calls.length,1);
-  assert.equal(s.goods.rows[1][4],'周年アクキー / ひなた'); assert.equal(s.goods.rows[1][7],'未受取'); assert.equal(s.goods.rows[1][10],'同期済み');
+  assert.equal(s.goods.rows[1][4],'周年アクキー / める'); assert.equal(s.goods.rows[1][7],'未受取'); assert.equal(s.goods.rows[1][10],'同期済み');
 });
 test('partial failure retries existing row and preserves received status',()=>{
   const s=setup(), p=s.payload(); s.setFail(true); assert.equal(s.post(p).ok,false);
@@ -65,7 +65,7 @@ test('partial failure retries existing row and preserves received status',()=>{
   assert.equal(s.calls[1].status,'受取済み'); assert.equal(s.goods.rows[1][7],'受取済み');
 });
 test('guest result never writes goods; unknown maid never grants goods',()=>{
-  const s=setup(); assert.equal(s.post({resultId:crypto.randomUUID(),guestName:'Guest',maidId:'maid01'}).ok,true);
+  const s=setup(); assert.equal(s.post({resultId:crypto.randomUUID(),guestName:'Guest',maidId:'meru'}).ok,true);
   assert.equal(s.goods.rows.length,1); const p=s.payload(); p.maidId='unknown'; assert.equal(s.post(p).ok,false);
   assert.equal(s.goods.rows.length,1);
 });

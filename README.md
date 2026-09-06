@@ -22,8 +22,12 @@ img/
     capsule_top.png
     capsule_bottom.png
   maids/
-    maid01.png
-    maid02.png
+    meru.png
+    mio.png
+    rei.png
+    ria.png
+    sena.png
+    usa.png
 audio/
   tap.mp3
   gacha_start.mp3
@@ -49,8 +53,12 @@ iPadでは縦向きで使用してください。横向きの場合は案内メ�
 
 ```javascript
 window.maidConfig = [
-  { id: "maid01", name: "ひなた", image: "img/maids/maid01.png" },
-  { id: "maid02", name: "みるく", image: "img/maids/maid02.png" }
+  { id: "meru", name: "める", image: "img/maids/meru.png" },
+  { id: "mio", name: "みお", image: "img/maids/mio.png" },
+  { id: "rei", name: "れい", image: "img/maids/rei.png" },
+  { id: "ria", name: "りあ", image: "img/maids/ria.png" },
+  { id: "sena", name: "せな", image: "img/maids/sena.png" },
+  { id: "usa", name: "うさ", image: "img/maids/usa.png" }
 ];
 ```
 

@@ -49,7 +49,7 @@ GOOGLE_SHEETS_WEBHOOK_SECRET
 
 GACHA_MAIDS_JSON（メイド構成を変更した場合）
   config.jsに対応する、idとnameの配列を設定します。
-  初期値: [{"id":"maid01","name":"ひなた"},{"id":"maid02","name":"みるく"}]
+  現在値: [{"id":"meru","name":"める"},{"id":"mio","name":"みお"},{"id":"rei","name":"れい"},{"id":"ria","name":"りあ"},{"id":"sena","name":"せな"},{"id":"usa","name":"うさ"}]
   グッズ名はサーバーで「周年アクキー / メイド名」として作成します。
 
 GACHA_SIGNING_SECRET

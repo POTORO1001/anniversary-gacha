@@ -81,14 +81,34 @@ config.js を編集します。
 
 window.maidConfig = [
   {
-    id: "maid01",
-    name: "ひなた",
-    image: "img/maids/maid01.png"
+    id: "meru",
+    name: "める",
+    image: "img/maids/meru.png"
   },
   {
-    id: "maid02",
-    name: "みるく",
-    image: "img/maids/maid02.png"
+    id: "mio",
+    name: "みお",
+    image: "img/maids/mio.png"
+  },
+  {
+    id: "rei",
+    name: "れい",
+    image: "img/maids/rei.png"
+  },
+  {
+    id: "ria",
+    name: "りあ",
+    image: "img/maids/ria.png"
+  },
+  {
+    id: "sena",
+    name: "せな",
+    image: "img/maids/sena.png"
+  },
+  {
+    id: "usa",
+    name: "うさ",
+    image: "img/maids/usa.png"
   }
 ];
 
