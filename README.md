@@ -92,7 +92,7 @@ https://docs.google.com/spreadsheets/d/1Ksbh-pnoJqri0MKAyn0NQZUtPCnUZcWWLIuz5d-B
 
 QR読み取りには同梱した [jsQR 1.4.0](https://github.com/cozmo/jsQR) を利用します。ライセンスは `vendor/jsQR-LICENSE.txt` にあります。カメラはHTTPSで開き、利用を許可してください。会員QRの識別子はサーバーで照合し、ブラウザにはサーバーの秘密キーを配信しません。
 
-サーバー処理の回帰テスト: `node --test tests/passport-bridge.test.cjs`。実際のQR画像を使うブラウザテストは `tests/passport-ui.cjs`（`passport_setup.txt` 参照）。本番の同期確認にはApps Scriptの設定・再デプロイが必要です。
+サーバー処理の回帰テスト: `node --test tests/passport-bridge.test.cjs`。カメラ受付のブラウザテストは `tests/passport-ui.cjs`（`passport_setup.txt` 参照）。本番の同期確認にはApps Scriptの設定・再デプロイが必要です。
 
 ## 演出
 
