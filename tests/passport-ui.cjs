@@ -4,10 +4,27 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
 (async () => {
-  assert(process.env.QR_IMAGE, 'Set QR_IMAGE to a test member QR image (never commit it).');
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 768, height: 1024 } });
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
+      Object.defineProperty(navigator, 'mediaDevices', {
+        configurable: true,
+        value: { getUserMedia: async () => new MediaStream() }
+      });
+      HTMLMediaElement.prototype.play = async function () {
+        Object.defineProperties(this, {
+          readyState: { configurable: true, value: 4 },
+          videoWidth: { configurable: true, value: 640 },
+          videoHeight: { configurable: true, value: 480 }
+        });
+      };
+      HTMLCanvasElement.prototype.getContext = () => ({
+        drawImage() {},
+        getImageData: () => ({ data: new Uint8ClampedArray(4) })
+      });
+    });
     const errors = [];
     const sent = [];
     let fail = true;
@@ -31,12 +48,14 @@ const { pathToFileURL } = require('node:url');
       sessionStorage.setItem('maidGachaPassportKey', 'test-key');
     });
     await page.reload();
+    await page.evaluate(() => { window.jsQR = () => ({ data: 'camera-test-qr-value' }); });
     await page.locator('#gachaButton').click();
     await page.locator('#gachaButton').evaluate(el => { el.click(); el.click(); });
     assert.equal(await page.locator('dialog[open]').count(), 1);
     await page.locator('#passportChoiceDialog button[value="member"]').click();
     await page.locator('#passportScanDialog[open]').waitFor();
-    await page.locator('#passportImageInput').setInputFiles(process.env.QR_IMAGE);
+    assert.equal(await page.locator('#passportImageInput').count(), 0);
+    await page.locator('#passportCameraButton').click();
     await page.locator('#passportConfirmButton').waitFor({ state: 'visible', timeout: 10000 }).catch(async error => { console.error(await page.locator('#passportScanStatus').textContent()); throw error; });
     assert.match(await page.locator('#passportMemberName').textContent(), /テスト会員/);
     await page.screenshot({ path: path.join(process.env.TEMP || '/tmp', 'passport-confirm.png') });
@@ -82,6 +101,6 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory') || '[]').length), 0);
     assert.equal(await page.locator('#guestNameLabel').textContent(), 'ご主人様: 未入力');
     assert.deepEqual(errors, []);
-    console.log('PASS: real QR decoding, member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
+    console.log('PASS: camera-only member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

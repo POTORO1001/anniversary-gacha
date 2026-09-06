@@ -34,7 +34,6 @@
       stopCamera();
       if (controller) controller.abort();
     });
-    $("passportImageInput").addEventListener("change", readImage);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         generation += 1;
@@ -64,10 +63,8 @@
     busy = false;
     generation += 1;
     $("passportMemberPreview").hidden = true;
-    $("passportImageInput").value = "";
     const configured = Boolean(settings.enabled && settings.endpoint && settings.key);
     $("passportCameraButton").disabled = !configured;
-    $("passportImageInput").disabled = !configured;
     status(configured ? "会員証のQRコードを読み取ってください。" : "会員受付の連携設定が必要です。スタッフにお声がけください。");
     const result = await openDialog($("passportScanDialog"));
     return result === "confirm" ? candidate : null;
@@ -92,7 +89,7 @@
     $("passportMemberPreview").hidden = true;
     try {
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-        throw new Error("カメラはHTTPSで開いてご利用ください。QR画像の選択も利用できます。");
+        throw new Error("カメラはHTTPSで開いてご利用ください。");
       }
       status("カメラを起動しています…");
       const camera = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 960 } }, audio: false });
@@ -118,28 +115,8 @@
     } catch (error) {
       if (run !== generation) return;
       stopCamera();
-      status(error.name === "NotAllowedError" ? "カメラの使用が許可されていません。QR画像も選択できます。" : error.message);
+      status(error.name === "NotAllowedError" ? "カメラの使用が許可されていません。Safariの設定からカメラを許可してください。" : error.message);
     }
-  }
-
-  async function readImage(event) {
-    const file = event.target.files[0];
-    if (!file || busy) return;
-    const run = ++generation;
-    stopCamera();
-    candidate = null;
-    $("passportMemberPreview").hidden = true;
-    const url = URL.createObjectURL(file);
-    try {
-      const image = new Image();
-      image.src = url;
-      await image.decode();
-      if (run !== generation) return;
-      const value = decode(image, image.naturalWidth, image.naturalHeight);
-      if (!value) throw new Error("QRコードが見つかりません。会員証の画像を選び直してください。");
-      await lookup(value, run);
-    } catch (error) { if (run === generation) status(error.message); }
-    finally { URL.revokeObjectURL(url); event.target.value = ""; }
   }
 
   async function lookup(qrIdentifier, run) {

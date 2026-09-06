@@ -90,7 +90,7 @@ https://docs.google.com/spreadsheets/d/1Ksbh-pnoJqri0MKAyn0NQZUtPCnUZcWWLIuz5d-B
 
 会員の当選グッズは管理台帳の「グッズ管理」に数量1・未受取で追加し、既存のパスポート同期APIで反映します。受取済み・取消は既存運用に従います。会員でない方はガチャ結果のみ記録します。登録IDは抽選IDから決めるため、通信失敗後に再送してもグッズは重複しません。サーバーが成功を返すまで未送信ログを保持します。
 
-QR読み取りには同梱した [jsQR 1.4.0](https://github.com/cozmo/jsQR) を利用します。ライセンスは `vendor/jsQR-LICENSE.txt` にあります。カメラはHTTPSで開き、利用を許可してください。QR画像の選択にも対応します。会員QRの識別子はサーバーで照合し、ブラウザにはサーバーの秘密キーを配信しません。
+QR読み取りには同梱した [jsQR 1.4.0](https://github.com/cozmo/jsQR) を利用します。ライセンスは `vendor/jsQR-LICENSE.txt` にあります。カメラはHTTPSで開き、利用を許可してください。会員QRの識別子はサーバーで照合し、ブラウザにはサーバーの秘密キーを配信しません。
 
 サーバー処理の回帰テスト: `node --test tests/passport-bridge.test.cjs`。実際のQR画像を使うブラウザテストは `tests/passport-ui.cjs`（`passport_setup.txt` 参照）。本番の同期確認にはApps Scriptの設定・再デプロイが必要です。
 
