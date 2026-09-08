@@ -113,7 +113,7 @@ def build_pdf():
 
     arrow(c, 227, 373, 160, 328, PINK)
     arrow(c, 368, 373, 435, 328, GREEN)
-    rounded_box(c, left_x, 190, branch_w, 130, PINK_LIGHT, PINK, ["同じご主人様が続ける", "次の1回分を確認", "同じご主人様がもう一度", "ガチャを回す をタップ", "受付なしで次の抽選へ"], size=9.5, leading=19)
+    rounded_box(c, left_x, 190, branch_w, 130, PINK_LIGHT, PINK, ["同じご主人様が続ける", "次の1回分の料金を頂戴する", "「同じご主人様がもう一度ガチャを回す」をタップ", "受付なしで次の抽選へ"], size=8.7, leading=23)
     rounded_box(c, right_x, 190, branch_w, 130, GREEN_LIGHT, GREEN, ["終了する", "終了する をタップ", "名前・会員情報・画面履歴をリセット", "最初の受付画面へ戻る"], size=9.5, leading=22)
 
     c.setStrokeColor(GRAY)
