@@ -87,20 +87,21 @@ def build_pdf():
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     width, _ = A4
     c = canvas.Canvas(str(OUTPUT), pagesize=A4, pageCompression=1)
-    c.setTitle("周年ガチャ 店頭対応フロー")
+    c.setTitle("周年ガチャオペレーション")
     c.setAuthor("PO TORO")
 
-    text(c, width / 2, 808, "周年ガチャ 店頭対応フロー", size=21, color=HexColor("#000000"), bold=True)
+    text(c, width / 2, 808, "周年ガチャオペレーション", size=21, color=HexColor("#000000"), bold=True)
+    text(c, width / 2, 772, "料金：ガチャ1回　1,000円", size=12.5, color=GOLD, bold=True)
 
-    rounded_box(c, 72, 744, 451, 38, PINK, PINK, ["1回 1,000円を確認して  ガチャを回す をタップ"], size=12, text_color=white)
-    arrow(c, width / 2, 744, width / 2, 720)
-    diamond(c, width / 2, 695, 360, 48, GOLD_LIGHT, GOLD, "ポトロパスポートをお持ちですか？", size=12)
+    rounded_box(c, 72, 724, 451, 38, PINK, PINK, ["会計を済ませてからガチャを回すをタップ"], size=12, text_color=white)
+    arrow(c, width / 2, 724, width / 2, 706)
+    diamond(c, width / 2, 682, 360, 44, GOLD_LIGHT, GOLD, "ポトロパスポートをお持ちですか？", size=12)
 
     left_x, right_x, branch_w = 31, 307, 257
-    arrow(c, 211, 681, 160, 638, PINK)
-    arrow(c, 384, 681, 435, 638, GREEN)
-    text(c, 164, 652, "持っている", size=9.5, color=PINK, bold=True)
-    text(c, 431, 652, "持っていない", size=9.5, color=GREEN, bold=True)
+    arrow(c, 211, 668, 160, 638, PINK)
+    arrow(c, 384, 668, 435, 638, GREEN)
+    text(c, 164, 647, "持っている", size=9.5, color=PINK, bold=True)
+    text(c, 431, 647, "持っていない", size=9.5, color=GREEN, bold=True)
     rounded_box(c, left_x, 500, branch_w, 130, PINK_LIGHT, PINK, ["会員のご主人様", "カメラで会員証QRを読み取る", "名前と会員番号を確認", "このご主人様で回す をタップ"], size=10, leading=22)
     rounded_box(c, right_x, 500, branch_w, 130, GREEN_LIGHT, GREEN, ["非会員のご主人様", "お名前を入力する", "この名前で回す をタップ"], size=10, leading=24)
 
@@ -117,8 +118,11 @@ def build_pdf():
 
     c.setStrokeColor(GRAY)
     c.setLineWidth(0.7)
-    c.line(28, 150, 567, 150)
-    text(c, width / 2, 124, "注意  演出中は連打しない  ／  終了時は必ず 終了する をタップ", size=9, bold=True)
+    c.line(28, 165, 567, 165)
+    text(c, 58, 145, "注意", size=10, color=GOLD, bold=True, align="left")
+    text(c, 78, 124, "・ガチャを回す際は必ずメイドさんが立ち会うこと", size=9, bold=True, align="left")
+    text(c, 78, 104, "・演出中は連打しない　／　終了時は必ず「終了する」をタップ", size=9, bold=True, align="left")
+    text(c, 78, 84, "・分からないことがあればおうまさんに確認", size=9, bold=True, align="left")
     text(c, 567, 38, "周年イベント 店頭スタッフ用", size=7.3, color=HexColor("#6B7D78"), align="right")
 
     c.showPage()
