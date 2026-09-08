@@ -91,7 +91,7 @@ def build_pdf():
     c.setAuthor("PO TORO")
 
     text(c, width / 2, 808, "周年ガチャオペレーション", size=21, color=HexColor("#000000"), bold=True)
-    text(c, width / 2, 772, "料金：ガチャ1回　1,000円", size=12.5, color=GOLD, bold=True)
+    text(c, width / 2, 772, "料金：ガチャ1回　1,000円", size=16, color=PINK, bold=True)
 
     rounded_box(c, 72, 724, 451, 38, PINK, PINK, ["会計を済ませてからガチャを回すをタップ"], size=12, text_color=white)
     arrow(c, width / 2, 724, width / 2, 706)
@@ -114,15 +114,15 @@ def build_pdf():
     arrow(c, 227, 373, 160, 328, PINK)
     arrow(c, 368, 373, 435, 328, GREEN)
     rounded_box(c, left_x, 190, branch_w, 130, PINK_LIGHT, PINK, ["同じご主人様が続ける", "次の1回分の料金を頂戴する", "「同じご主人様がもう一度ガチャを回す」をタップ", "受付なしで次の抽選へ"], size=8.7, leading=23)
-    rounded_box(c, right_x, 190, branch_w, 130, GREEN_LIGHT, GREEN, ["終了する", "終了する をタップ", "名前・会員情報・画面履歴をリセット", "最初の受付画面へ戻る"], size=9.5, leading=22)
+    rounded_box(c, right_x, 190, branch_w, 130, GREEN_LIGHT, GREEN, ["終了する", "終了する をタップ", "最初の受付画面へ戻る"], size=10, leading=27)
 
     c.setStrokeColor(GRAY)
     c.setLineWidth(0.7)
     c.line(28, 165, 567, 165)
-    text(c, 58, 145, "注意", size=10, color=GOLD, bold=True, align="left")
-    text(c, 78, 124, "・ガチャを回す際は必ずメイドさんが立ち会うこと", size=9, bold=True, align="left")
-    text(c, 78, 104, "・演出中は連打しない　／　終了時は必ず「終了する」をタップ", size=9, bold=True, align="left")
-    text(c, 78, 84, "・分からないことがあればおうまさんに確認", size=9, bold=True, align="left")
+    text(c, 52, 145, "注意", size=12, color=PINK, bold=True, align="left")
+    text(c, 68, 123, "・ガチャを回す際は必ずメイドさんが立ち会うこと", size=10, bold=True, align="left")
+    text(c, 68, 101, "・演出中は連打しない　／　終了時は必ず「終了する」をタップ", size=10, bold=True, align="left")
+    text(c, 68, 79, "・分からないことがあればおうまさんに確認", size=10, bold=True, align="left")
     text(c, 567, 38, "周年イベント 店頭スタッフ用", size=7.3, color=HexColor("#6B7D78"), align="right")
 
     c.showPage()
