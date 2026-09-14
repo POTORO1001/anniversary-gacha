@@ -876,6 +876,52 @@ button:focus-visible { outline: 3px solid #367d68; outline-offset: 5px; }
   text-align: left;
 }
 
+.payment-confirm-dialog {
+  text-align: center;
+  border-top-color: #d83d73;
+}
+
+.payment-confirm-dialog .payment-kicker {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  color: #fff;
+  background: #9a244b;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.payment-confirm-dialog .payment-price {
+  margin: 22px 0 12px;
+  padding: 18px 12px;
+  border: 2px solid #df3e76;
+  border-radius: 6px;
+  color: #9a244b;
+  background: #fff0f5;
+  font-size: 23px;
+}
+
+.payment-confirm-dialog .payment-price strong {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 34px;
+}
+
+.payment-confirm-dialog .payment-guidance {
+  margin: 0;
+  color: #304b45;
+  font-size: 17px;
+}
+
+.payment-confirm-dialog menu {
+  justify-content: center;
+}
+
+.payment-confirm-dialog menu button {
+  min-width: 150px;
+}
+
 .passport-dialog { max-height: 90dvh; overflow-y: auto; }
 .passport-dialog h2 { font-size: 24px; line-height: 1.4; }
 .passport-actions { display: grid; gap: 12px; margin-top: 20px; }

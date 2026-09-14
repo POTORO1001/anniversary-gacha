@@ -91,7 +91,7 @@
       "drawCount", "particleLayer", "flash", "skipButton", "adminTapTarget",
       "adminPanel", "closeAdminButton", "soundToggle", "skipToggle", "bgmToggle", "bgmVolume", "bgmVolumeLabel",
       "resetHistoryButton", "testAnimationButton", "maidCount", "adminDrawCount",
-      "maidList", "confirmDialog", "orientationWarning", "guestDialog",
+      "maidList", "confirmDialog", "paymentConfirmDialog", "orientationWarning", "guestDialog",
       "guestForm", "guestNameInput", "guestCancelButton", "guestNameLabel", "adminGuestName",
       "spreadsheetToggle", "spreadsheetUrlInput", "deviceNameInput",
       "saveSpreadsheetSettingsButton", "retrySyncButton", "pendingSyncCount", "passportKeyInput", "resultSyncStatus",
@@ -100,8 +100,8 @@
   }
 
   function bindEvents() {
-    els.gachaButton.addEventListener("click", startGacha);
-    els.againButton.addEventListener("click", resetToIdle);
+    els.gachaButton.addEventListener("click", () => startGacha());
+    els.againButton.addEventListener("click", continueGacha);
     els.endButton.addEventListener("click", endGuestSession);
     els.nextGuestButton.addEventListener("click", confirmNextGuest);
     els.skipButton.addEventListener("click", requestSkip);
@@ -153,7 +153,7 @@
     });
     els.testAnimationButton.addEventListener("click", () => {
       els.adminPanel.classList.remove("is-active");
-      startGacha();
+      startGacha({ skipPayment: true });
     });
     window.addEventListener("resize", updateOrientation, { passive: true });
     window.addEventListener("orientationchange", updateOrientation, { passive: true });
@@ -219,6 +219,22 @@
     return normalized;
   }
 
+  function confirmPayment() {
+    if (typeof els.paymentConfirmDialog.showModal !== "function") {
+      return Promise.resolve(window.confirm("ガチャ1回 1,000円を頂戴しましたか？"));
+    }
+
+    els.paymentConfirmDialog.returnValue = "";
+    els.paymentConfirmDialog.showModal();
+    return new Promise((resolve) => {
+      const onClose = () => {
+        els.paymentConfirmDialog.removeEventListener("close", onClose);
+        resolve(els.paymentConfirmDialog.returnValue === "confirm");
+      };
+      els.paymentConfirmDialog.addEventListener("close", onClose);
+    });
+  }
+
   function savePassportKey() {
     const key = els.passportKeyInput.value.trim();
     if (!key) {
@@ -251,12 +267,13 @@
     els.clearPassportKeyButton.disabled = !savedKey && !inputKey;
   }
 
-  async function startGacha() {
+  async function startGacha({ skipPayment = false } = {}) {
     if (AppState.isAnimating || AppState.isReceiving || isLandscape()) return;
     unlockAudio();
     AppState.isReceiving = true;
     lockControls();
     try {
+      if (!skipPayment && !await confirmPayment()) return;
       if (!AppState.receptionReady) {
         const reception = await window.PassportGacha.choose({
           enabled: AppState.spreadsheetEnabled,
@@ -540,6 +557,12 @@
     showScreen("idle");
     unlockControls();
     renderHistory();
+  }
+
+  function continueGacha() {
+    if (AppState.isAnimating || AppState.isReceiving || AppState.screen !== "result") return;
+    resetToIdle();
+    startGacha();
   }
 
   function endGuestSession() {
