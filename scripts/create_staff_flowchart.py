@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from reportlab.lib.colors import HexColor, white
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -9,6 +9,7 @@ from reportlab.pdfgen import canvas
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "周年ガチャ_メイド向け運用フロー.pdf"
+PAGE_SIZE = (170 * mm, 240 * mm)
 
 INK = HexColor("#243A37")
 PINK = HexColor("#D83D73")
@@ -82,48 +83,84 @@ def arrow(c, x1, y1, x2, y2, color=GREEN):
         c.line(x2, y2, x2 - direction * angle, y2 + angle)
 
 
+def step_label(c, x, y, number, label, color):
+    c.setFillColor(color)
+    c.circle(x, y, 10, fill=1, stroke=0)
+    text(c, x, y - 3.4, str(number), size=9, color=white, bold=True)
+    text(c, x + 17, y - 3.4, label, size=10, color=color, bold=True, align="left")
+
+
+def branch_card(c, x, y, w, h, fill, stroke, title, steps, button_label, button_size=8.5):
+    c.setFillColor(fill)
+    c.setStrokeColor(stroke)
+    c.setLineWidth(1.2)
+    c.roundRect(x, y, w, h, 7, fill=1, stroke=1)
+    text(c, x + w / 2, y + h - 20, title, size=10.5, color=stroke, bold=True)
+    for index, line in enumerate(steps):
+        text(c, x + 13, y + h - 40 - index * 16, line, size=8.3, align="left")
+    button_y = y + 10
+    c.setFillColor(white)
+    c.setStrokeColor(stroke)
+    c.roundRect(x + 10, button_y, w - 20, 23, 5, fill=1, stroke=1)
+    text(c, x + w / 2, button_y + 7.2, button_label, size=button_size, color=stroke, bold=True)
+
+
 def build_pdf():
     register_fonts()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    width, _ = A4
-    c = canvas.Canvas(str(OUTPUT), pagesize=A4, pageCompression=1)
+    width, height = PAGE_SIZE
+    c = canvas.Canvas(str(OUTPUT), pagesize=PAGE_SIZE, pageCompression=1)
     c.setTitle("周年ガチャオペレーション")
     c.setAuthor("PO TORO")
 
-    text(c, width / 2, 808, "周年ガチャオペレーション", size=21, color=HexColor("#000000"), bold=True)
-    text(c, width / 2, 772, "料金：ガチャ1回　1,000円", size=16, color=PINK, bold=True)
+    text(c, width / 2, height - 31, "周年ガチャオペレーション", size=18.5, color=HexColor("#111111"), bold=True)
+    text(c, width / 2, height - 48, "店頭スタッフ用", size=7.5, color=HexColor("#6B7D78"), bold=True)
 
-    rounded_box(c, 72, 724, 451, 38, PINK, PINK, ["会計を済ませてからガチャを回すをタップ"], size=12, text_color=white)
-    arrow(c, width / 2, 724, width / 2, 706)
-    diamond(c, width / 2, 682, 360, 44, GOLD_LIGHT, GOLD, "ポトロパスポートをお持ちですか？", size=12)
+    c.setFillColor(PINK_LIGHT)
+    c.setStrokeColor(PINK)
+    c.setLineWidth(1.4)
+    c.roundRect(63, height - 91, width - 126, 29, 6, fill=1, stroke=1)
+    text(c, width / 2, height - 81, "料金：ガチャ1回　1,000円", size=14.5, color=PINK, bold=True)
 
-    left_x, right_x, branch_w = 31, 307, 257
-    arrow(c, 211, 668, 160, 638, PINK)
-    arrow(c, 384, 668, 435, 638, GREEN)
-    text(c, 164, 647, "持っている", size=9.5, color=PINK, bold=True)
-    text(c, 431, 647, "持っていない", size=9.5, color=GREEN, bold=True)
-    rounded_box(c, left_x, 500, branch_w, 130, PINK_LIGHT, PINK, ["会員のご主人様", "カメラで会員証QRを読み取る", "名前と会員番号を確認", "このご主人様で回す をタップ"], size=10, leading=22)
-    rounded_box(c, right_x, 500, branch_w, 130, GREEN_LIGHT, GREEN, ["非会員のご主人様", "お名前を入力する", "この名前で回す をタップ"], size=10, leading=24)
+    step_label(c, 32, height - 115, 1, "会計後、ガチャを開始", PINK)
+    rounded_box(c, 30, height - 160, width - 60, 32, PINK, PINK, ["「ガチャを回す」をタップ"], size=11, text_color=white)
+    arrow(c, width / 2, height - 160, width / 2, height - 174)
 
-    arrow(c, 160, 500, 260, 472, PINK)
-    arrow(c, 435, 500, 335, 472, GREEN)
-    rounded_box(c, 72, 430, 451, 36, GOLD, GOLD, ["ガチャ演出  →  当選アクキーを確認"], size=12, text_color=white)
-    arrow(c, width / 2, 430, width / 2, 409)
-    diamond(c, width / 2, 385, 300, 44, GOLD_LIGHT, GOLD, "続けて回しますか？", size=11.5)
+    step_label(c, 32, height - 192, 2, "ポトロパスポートを確認", GOLD)
+    diamond(c, width / 2, height - 224, width - 105, 39, GOLD_LIGHT, GOLD, "ポトロパスポートはありますか？", size=10.5)
 
-    arrow(c, 227, 373, 160, 328, PINK)
-    arrow(c, 368, 373, 435, 328, GREEN)
-    rounded_box(c, left_x, 190, branch_w, 130, PINK_LIGHT, PINK, ["同じご主人様が続ける", "次の1回分の料金を頂戴する", "「同じご主人様がもう一度ガチャを回す」をタップ", "受付なしで次の抽選へ"], size=8.7, leading=23)
-    rounded_box(c, right_x, 190, branch_w, 130, GREEN_LIGHT, GREEN, ["終了する", "終了する をタップ", "最初の受付画面へ戻る"], size=10, leading=27)
+    left_x, gap, branch_w = 18, 14, (width - 50) / 2
+    right_x = left_x + branch_w + gap
+    arrow(c, width / 2 - 57, height - 236, left_x + branch_w / 2, height - 256, PINK)
+    arrow(c, width / 2 + 57, height - 236, right_x + branch_w / 2, height - 256, GREEN)
+    text(c, left_x + branch_w / 2, height - 251, "ある", size=8.5, color=PINK, bold=True)
+    text(c, right_x + branch_w / 2, height - 251, "ない", size=8.5, color=GREEN, bold=True)
+    branch_card(c, left_x, height - 353, branch_w, 91, PINK_LIGHT, PINK, "会員のご主人様", ["1  カメラでQRを読み取る", "2  名前・会員番号を確認"], "このご主人様で回す")
+    branch_card(c, right_x, height - 353, branch_w, 91, GREEN_LIGHT, GREEN, "非会員のご主人様", ["1  お名前を入力する"], "この名前で回す")
 
-    c.setStrokeColor(GRAY)
-    c.setLineWidth(0.7)
-    c.line(28, 165, 567, 165)
-    text(c, 52, 145, "注意", size=12, color=PINK, bold=True, align="left")
-    text(c, 68, 123, "・ガチャを回す際は必ずメイドさんが立ち会うこと", size=10, bold=True, align="left")
-    text(c, 68, 101, "・演出中は連打しない　／　終了時は必ず「終了する」をタップ", size=10, bold=True, align="left")
-    text(c, 68, 79, "・分からないことがあればおうまさんに確認", size=10, bold=True, align="left")
-    text(c, 567, 38, "周年イベント 店頭スタッフ用", size=7.3, color=HexColor("#6B7D78"), align="right")
+    arrow(c, left_x + branch_w / 2, height - 353, width / 2 - 38, height - 369, PINK)
+    arrow(c, right_x + branch_w / 2, height - 353, width / 2 + 38, height - 369, GREEN)
+    step_label(c, 32, height - 382, 3, "ガチャ演出と結果確認", GOLD)
+    rounded_box(c, 30, height - 424, width - 60, 31, GOLD, GOLD, ["ガチャ演出  →  当選アクキーを確認"], size=10.5, text_color=white)
+    arrow(c, width / 2, height - 424, width / 2, height - 438)
+
+    step_label(c, 32, height - 456, 4, "続けるか終了するかを選択", GREEN)
+    diamond(c, width / 2, height - 484, width - 150, 36, GOLD_LIGHT, GOLD, "続けて回しますか？", size=10.5)
+    arrow(c, width / 2 - 48, height - 494, left_x + branch_w / 2, height - 516, PINK)
+    arrow(c, width / 2 + 48, height - 494, right_x + branch_w / 2, height - 516, GREEN)
+    branch_card(c, left_x, height - 603, branch_w, 81, PINK_LIGHT, PINK, "同じご主人様が続ける", ["1  次の1回分の料金を頂戴する"], "同じご主人様がもう一度ガチャを回す", button_size=6.8)
+    branch_card(c, right_x, height - 603, branch_w, 81, GREEN_LIGHT, GREEN, "終了する", ["最初の受付画面へ戻る"], "終了する", button_size=9)
+
+    notice_y = 10
+    notice_h = 60
+    c.setFillColor(RED_LIGHT)
+    c.setStrokeColor(PINK)
+    c.setLineWidth(1.2)
+    c.roundRect(18, notice_y, width - 36, notice_h, 6, fill=1, stroke=1)
+    text(c, 31, notice_y + notice_h - 17, "重要", size=10.5, color=PINK, bold=True, align="left")
+    text(c, 31, notice_y + 31, "・ガチャを回す際は必ずメイドさんが立ち会うこと", size=8.2, bold=True, align="left")
+    text(c, 31, notice_y + 17, "・演出中は連打しない ／ 終了時は必ず「終了する」をタップ", size=8.2, bold=True, align="left")
+    text(c, 31, notice_y + 3, "・分からないことがあればおうまさんに確認", size=8.2, bold=True, align="left")
 
     c.showPage()
     c.save()
