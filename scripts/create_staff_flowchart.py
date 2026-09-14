@@ -114,7 +114,7 @@ def build_pdf():
     c.setAuthor("PO TORO")
 
     text(c, width / 2, height - 31, "周年ガチャオペレーション", size=18.5, color=HexColor("#111111"), bold=True)
-    text(c, width / 2, height - 48, "店頭スタッフ用", size=7.5, color=HexColor("#6B7D78"), bold=True)
+    text(c, width / 2, height - 48, "メイドさん用", size=7.5, color=HexColor("#6B7D78"), bold=True)
 
     c.setFillColor(PINK_LIGHT)
     c.setStrokeColor(PINK)
