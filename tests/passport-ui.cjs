@@ -74,6 +74,9 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.locator('#resultSyncStatus').textContent(), '');
     await page.locator('#againButton').click();
     await page.locator('#paymentConfirmDialog[open]').waitFor();
+    assert.equal(await page.locator('#maidImage').getAttribute('src'), null);
+    assert.equal(await page.locator('#maidImage').evaluate(el => getComputedStyle(el).display), 'none');
+    assert.equal(await page.locator('#focusMaidImage').getAttribute('src'), null);
     await page.locator('#paymentConfirmDialog button[value="cancel"]').click();
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory')).length), 1);
     await page.locator('#nextGuestButton').click();
@@ -111,6 +114,6 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory') || '[]').length), 0);
     assert.equal(await page.locator('#guestNameLabel').textContent(), 'ご主人様: 未入力');
     assert.deepEqual(errors, []);
-    console.log('PASS: payment-first confirmation, cancel without draw, camera-only member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
+    console.log('PASS: stale result images cleared, payment-first confirmation, cancel without draw, camera-only member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

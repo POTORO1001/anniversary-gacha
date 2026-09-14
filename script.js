@@ -550,6 +550,7 @@
 
   function resetToIdle() {
     cleanupAnimation();
+    clearResultVisuals();
     AppState.screen = "idle";
     AppState.isAnimating = false;
     AppState.selectedMaid = null;
@@ -686,19 +687,46 @@
   }
 
   function prepareMaidImage(img, placeholder, maid) {
+    clearMaidImage(img, placeholder);
     placeholder.textContent = `${displayName(maid)}`;
-    placeholder.style.display = "none";
-    img.style.display = "block";
     img.alt = `${displayName(maid)}のアクキー`;
-    img.onload = () => {
+    const showImage = () => {
       img.style.display = "block";
       placeholder.style.display = "none";
     };
-    img.onerror = () => {
+    const showPlaceholder = () => {
       img.style.display = "none";
       placeholder.style.display = "grid";
     };
-    img.src = maid.image || "";
+    const src = maid.image || "";
+    if (!src) {
+      showPlaceholder();
+      return;
+    }
+    img.onload = showImage;
+    img.onerror = showPlaceholder;
+    img.src = src;
+    if (img.complete) {
+      if (img.naturalWidth > 0) showImage();
+      else showPlaceholder();
+    }
+  }
+
+  function clearMaidImage(img, placeholder) {
+    img.onload = null;
+    img.onerror = null;
+    img.style.display = "none";
+    img.removeAttribute("src");
+    img.removeAttribute("alt");
+    placeholder.style.display = "none";
+    placeholder.textContent = "";
+  }
+
+  function clearResultVisuals() {
+    clearMaidImage(els.maidImage, els.maidPlaceholder);
+    clearMaidImage(els.focusMaidImage, els.focusPlaceholder);
+    els.resultMessage.textContent = "";
+    els.focusMessage.textContent = "";
   }
 
   function applyImageFallbacks() {
