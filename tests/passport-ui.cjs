@@ -48,6 +48,20 @@ const { pathToFileURL } = require('node:url');
       sessionStorage.setItem('maidGachaPassportKey', 'test-key');
     });
     await page.reload();
+    const koguma = await page.evaluate(async () => {
+      const maid = window.maidConfig.find(item => item.id === 'koguma');
+      if (!maid) return null;
+      const loaded = await new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => resolve(null);
+        img.src = maid.image;
+      });
+      return { maid, loaded, count: window.maidConfig.length };
+    });
+    assert.equal(koguma.count, 7);
+    assert.deepEqual(koguma.maid, { id: 'koguma', name: 'こぐま', image: 'img/maids/koguma.png' });
+    assert.deepEqual(koguma.loaded, { width: 832, height: 1703 });
     await page.evaluate(() => { window.jsQR = () => ({ data: 'camera-test-qr-value' }); });
     await page.locator('#gachaButton').click();
     await page.locator('#gachaButton').evaluate(el => { el.click(); el.click(); });
@@ -114,6 +128,6 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('maidGachaHistory') || '[]').length), 0);
     assert.equal(await page.locator('#guestNameLabel').textContent(), 'ご主人様: 未入力');
     assert.deepEqual(errors, []);
-    console.log('PASS: stale result images cleared, payment-first confirmation, cancel without draw, camera-only member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
+    console.log('PASS: koguma asset, stale result images cleared, payment-first confirmation, cancel without draw, camera-only member confirmation, reception double-tap guard, skip, failed sync queue, next guest retains pending data, idempotent retry, guest flow');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

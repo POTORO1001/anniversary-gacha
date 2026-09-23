@@ -28,6 +28,11 @@ window.maidConfig = [
     id: "usa",
     name: "うさ",
     image: "img/maids/usa.png"
+  },
+  {
+    id: "koguma",
+    name: "こぐま",
+    image: "img/maids/koguma.png"
   }
 ];
 

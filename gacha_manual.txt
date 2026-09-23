@@ -110,12 +110,18 @@ window.maidConfig = [
     id: "usa",
     name: "うさ",
     image: "img/maids/usa.png"
+  },
+  {
+    id: "koguma",
+    name: "こぐま",
+    image: "img/maids/koguma.png"
   }
 ];
 
 追加する場合:
 1. img/maids/ にPNG画像を入れます。
 2. config.js に1人分の設定を追加します。
+3. 会員連携を使う場合は、Apps ScriptのGACHA_MAIDS_JSONにも同じidとnameを追加します。
 
 削除する場合:
 config.js から対象のメイドさんの設定を削除します。

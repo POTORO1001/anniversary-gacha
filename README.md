@@ -28,6 +28,7 @@ img/
     ria.png
     sena.png
     usa.png
+    koguma.png
 audio/
   tap.mp3
   gacha_start.mp3
@@ -58,11 +59,13 @@ window.maidConfig = [
   { id: "rei", name: "れい", image: "img/maids/rei.png" },
   { id: "ria", name: "りあ", image: "img/maids/ria.png" },
   { id: "sena", name: "せな", image: "img/maids/sena.png" },
-  { id: "usa", name: "うさ", image: "img/maids/usa.png" }
+  { id: "usa", name: "うさ", image: "img/maids/usa.png" },
+  { id: "koguma", name: "こぐま", image: "img/maids/koguma.png" }
 ];
 ```
 
 画像は背景透過PNG、縦長、1000 x 1600px前後がおすすめです。画像が読み込めない場合は名前入りの仮カードを表示します。
+会員連携を使う場合は、Apps Scriptのスクリプトプロパティ `GACHA_MAIDS_JSON` にも同じ `id` と `name` を登録してください。
 
 ## 管理者設定
 

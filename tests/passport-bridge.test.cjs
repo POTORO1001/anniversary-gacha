@@ -58,6 +58,10 @@ test('member result uses server names and saves exactly once',()=>{
   assert.equal(s.goods.rows.length,2); assert.equal(s.log.rows.length,2); assert.equal(s.calls.length,1);
   assert.equal(s.goods.rows[1][4],'周年アクキー / める'); assert.equal(s.goods.rows[1][7],'未受取'); assert.equal(s.goods.rows[1][10],'同期済み');
 });
+test('koguma result is accepted by the goods registry',()=>{
+  const s=setup(), p=s.payload(); p.maidId='koguma'; assert.equal(s.post(p).ok,true);
+  assert.equal(s.goods.rows[1][4],'周年アクキー / こぐま');
+});
 test('partial failure retries existing row and preserves received status',()=>{
   const s=setup(), p=s.payload(); s.setFail(true); assert.equal(s.post(p).ok,false);
   assert.equal(s.goods.rows[1][10],'エラー'); s.goods.rows[1][7]='受取済み';
