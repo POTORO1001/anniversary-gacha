@@ -62,6 +62,10 @@ test('koguma result is accepted by the goods registry',()=>{
   const s=setup(), p=s.payload(); p.maidId='koguma'; assert.equal(s.post(p).ok,true);
   assert.equal(s.goods.rows[1][4],'周年アクキー / こぐま');
 });
+test('nagi result is accepted by the goods registry',()=>{
+  const s=setup(), p=s.payload(); p.maidId='nagi'; assert.equal(s.post(p).ok,true);
+  assert.equal(s.goods.rows[1][4],'周年アクキー / なぎ');
+});
 test('partial failure retries existing row and preserves received status',()=>{
   const s=setup(), p=s.payload(); s.setFail(true); assert.equal(s.post(p).ok,false);
   assert.equal(s.goods.rows[1][10],'エラー'); s.goods.rows[1][7]='受取済み';

@@ -73,7 +73,8 @@ function getGachaMaid_(id) {
     { id: "ria", name: "りあ" },
     { id: "sena", name: "せな" },
     { id: "usa", name: "うさ" },
-    { id: "koguma", name: "こぐま" }
+    { id: "koguma", name: "こぐま" },
+    { id: "nagi", name: "なぎ" }
   ];
   const maid = maids.find(item => item.id === id && item.name);
   if (!maid) throw new Error("Apps Scriptのメイド設定を確認してください。");

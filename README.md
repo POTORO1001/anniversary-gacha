@@ -29,6 +29,7 @@ img/
     sena.png
     usa.png
     koguma.png
+    nagi.png
 audio/
   tap.mp3
   gacha_start.mp3
@@ -60,7 +61,8 @@ window.maidConfig = [
   { id: "ria", name: "りあ", image: "img/maids/ria.png" },
   { id: "sena", name: "せな", image: "img/maids/sena.png" },
   { id: "usa", name: "うさ", image: "img/maids/usa.png" },
-  { id: "koguma", name: "こぐま", image: "img/maids/koguma.png" }
+  { id: "koguma", name: "こぐま", image: "img/maids/koguma.png" },
+  { id: "nagi", name: "なぎ", image: "img/maids/nagi.png" }
 ];
 ```
 
