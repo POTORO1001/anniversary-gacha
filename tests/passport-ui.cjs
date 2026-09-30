@@ -50,7 +50,7 @@ const { pathToFileURL } = require('node:url');
     await page.reload();
     const addedMaids = await page.evaluate(async () => {
       const results = {};
-      for (const id of ['koguma', 'nagi']) {
+      for (const id of ['koguma', 'nagi', 'oumasan']) {
         const maid = window.maidConfig.find(item => item.id === id);
         if (!maid) continue;
         const loaded = await new Promise(resolve => {
@@ -63,9 +63,10 @@ const { pathToFileURL } = require('node:url');
       }
       return { results, count: window.maidConfig.length };
     });
-    assert.equal(addedMaids.count, 8);
+    assert.equal(addedMaids.count, 9);
     assert.deepEqual(addedMaids.results.koguma, { maid: { id: 'koguma', name: 'こぐま', image: 'img/maids/koguma.png' }, loaded: { width: 832, height: 1703 } });
     assert.deepEqual(addedMaids.results.nagi, { maid: { id: 'nagi', name: 'なぎ', image: 'img/maids/nagi.png' }, loaded: { width: 932, height: 1688 } });
+    assert.deepEqual(addedMaids.results.oumasan, { maid: { id: 'oumasan', name: 'おうまさん', image: 'img/maids/oumasan.png' }, loaded: { width: 1002, height: 1448 } });
     await page.evaluate(() => { window.jsQR = () => ({ data: 'camera-test-qr-value' }); });
     await page.locator('#gachaButton').click();
     await page.locator('#gachaButton').evaluate(el => { el.click(); el.click(); });

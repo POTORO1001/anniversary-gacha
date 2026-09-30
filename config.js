@@ -38,6 +38,11 @@ window.maidConfig = [
     id: "nagi",
     name: "なぎ",
     image: "img/maids/nagi.png"
+  },
+  {
+    id: "oumasan",
+    name: "おうまさん",
+    image: "img/maids/oumasan.png"
   }
 ];
 
