@@ -124,7 +124,8 @@ window.maidConfig = [
   {
     id: "oumasan",
     name: "おうまさん",
-    image: "img/maids/oumasan.png"
+    image: "img/maids/oumasan.png",
+    chancePercent: 5
   }
 ];
 
@@ -136,7 +137,9 @@ window.maidConfig = [
 削除する場合:
 config.js から対象のメイドさんの設定を削除します。
 
-抽選確率は全員同じです。
+chancePercentを指定したメイドさんは、その当選確率に固定されます。
+残りの確率はchancePercent未指定のメイドさんで均等に分けます。
+現在はおうまさんが5％、その他8人が各11.875％です。
 同じメイドさんが連続で当たることもあります。
 
 

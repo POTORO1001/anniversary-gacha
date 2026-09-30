@@ -42,7 +42,8 @@ window.maidConfig = [
   {
     id: "oumasan",
     name: "おうまさん",
-    image: "img/maids/oumasan.png"
+    image: "img/maids/oumasan.png",
+    chancePercent: 5
   }
 ];
 

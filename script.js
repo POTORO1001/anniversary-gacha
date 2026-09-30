@@ -439,10 +439,37 @@
   }
 
   function drawMaid() {
-    if (!Array.isArray(window.maidConfig) && typeof maidConfig === "undefined") return null;
-    const maids = (window.maidConfig || maidConfig || []).filter((maid) => maid && maid.name);
-    if (maids.length === 0) return null;
-    return maids[Math.floor(Math.random() * maids.length)];
+    const distribution = getMaidDistribution();
+    if (distribution.length === 0) return null;
+    let roll = Math.random() * 100;
+    for (const entry of distribution) {
+      roll -= entry.probability;
+      if (roll < 0) return entry.maid;
+    }
+    return distribution[distribution.length - 1].maid;
+  }
+
+  function getMaidDistribution() {
+    const maids = getMaidList().filter((maid) => maid && maid.name);
+    if (maids.length === 0) return [];
+    const fixed = maids.filter((maid) => Number.isFinite(maid.chancePercent) && maid.chancePercent >= 0);
+    const fixedTotal = fixed.reduce((sum, maid) => sum + maid.chancePercent, 0);
+    const flexibleCount = maids.length - fixed.length;
+    if (fixedTotal > 100 || (flexibleCount === 0 && Math.abs(fixedTotal - 100) > .0001)) {
+      const equalProbability = 100 / maids.length;
+      return maids.map((maid) => ({ maid, probability: equalProbability }));
+    }
+    const sharedProbability = flexibleCount > 0 ? (100 - fixedTotal) / flexibleCount : 0;
+    return maids.map((maid) => ({
+      maid,
+      probability: Number.isFinite(maid.chancePercent) && maid.chancePercent >= 0
+        ? maid.chancePercent
+        : sharedProbability
+    }));
+  }
+
+  function formatProbability(value) {
+    return Number(value.toFixed(3)).toString();
   }
 
   function saveResult(maid) {
@@ -529,9 +556,9 @@
     els.spreadsheetUrlInput.value = AppState.spreadsheetEndpointUrl;
     els.deviceNameInput.value = AppState.deviceName;
     els.maidList.replaceChildren();
-    maids.forEach((maid) => {
+    getMaidDistribution().forEach(({ maid, probability }) => {
       const row = document.createElement("div");
-      row.textContent = `${maid.id || "-"} / ${maid.name}`;
+      row.textContent = `${maid.id || "-"} / ${maid.name} / ${formatProbability(probability)}%`;
       els.maidList.appendChild(row);
     });
   }

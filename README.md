@@ -64,11 +64,12 @@ window.maidConfig = [
   { id: "usa", name: "うさ", image: "img/maids/usa.png" },
   { id: "koguma", name: "こぐま", image: "img/maids/koguma.png" },
   { id: "nagi", name: "なぎ", image: "img/maids/nagi.png" },
-  { id: "oumasan", name: "おうまさん", image: "img/maids/oumasan.png" }
+  { id: "oumasan", name: "おうまさん", image: "img/maids/oumasan.png", chancePercent: 5 }
 ];
 ```
 
 画像は背景透過PNG、縦長、1000 x 1600px前後がおすすめです。画像が読み込めない場合は名前入りの仮カードを表示します。
+`chancePercent` を指定したメイドさんはその確率に固定され、残りの確率を未指定のメイドさんで均等に分けます。現在はおうまさんが5％、その他8人が各11.875％です。
 会員連携を使う場合は、Apps Scriptのスクリプトプロパティ `GACHA_MAIDS_JSON` にも同じ `id` と `name` を登録してください。
 
 ## 管理者設定
