@@ -38,6 +38,8 @@
     isReceiving: false,
     receptionReady: false,
     drawReady: false,
+    drawUnlockAt: 0,
+    drawArmTimer: 0,
     currentMember: null,
     selectedMaid: null,
     resultSaved: false,
@@ -291,7 +293,7 @@
         }
         AppState.receptionReady = true;
       }
-      AppState.drawReady = true;
+      armDrawButton();
     } catch (error) {
       alert(error.message || "受付を完了できませんでした。");
       return;
@@ -303,7 +305,11 @@
 
   async function startDraw({ allowWithoutReception = false } = {}) {
     if (AppState.isAnimating || AppState.isReceiving || isLandscape()) return;
-    if (!allowWithoutReception && (!AppState.receptionReady || !AppState.drawReady)) return;
+    if (!allowWithoutReception && (
+      !AppState.receptionReady
+      || !AppState.drawReady
+      || Date.now() < AppState.drawUnlockAt
+    )) return;
     unlockAudio();
     if (isLandscape()) return;
     const selectedMaid = drawMaid();
@@ -436,7 +442,7 @@
 
   function finishResult(selectedMaid) {
     cleanupAnimation();
-    AppState.drawReady = false;
+    disarmDrawButton();
     saveResult(selectedMaid);
     prepareMaidImage(els.maidImage, els.maidPlaceholder, selectedMaid);
     els.resultMessage.textContent = `${displayName(selectedMaid)}が当たりました！`;
@@ -527,7 +533,7 @@
     AppState.currentGuestName = "";
     AppState.currentMember = null;
     AppState.receptionReady = false;
-    AppState.drawReady = false;
+    disarmDrawButton();
     localStorage.removeItem(STORAGE_HISTORY);
     localStorage.removeItem(STORAGE_GUEST_NAME);
     renderHistory();
@@ -590,7 +596,7 @@
   function resetToIdle() {
     cleanupAnimation();
     clearResultVisuals();
-    AppState.drawReady = false;
+    disarmDrawButton();
     AppState.screen = "idle";
     AppState.isAnimating = false;
     AppState.selectedMaid = null;
@@ -623,7 +629,6 @@
 
   function unlockControls() {
     els.receptionButton.disabled = false;
-    els.gachaButton.disabled = !AppState.drawReady;
     els.againButton.disabled = false;
     els.endButton.disabled = false;
     els.nextGuestButton.disabled = false;
@@ -632,10 +637,28 @@
 
   function renderGachaControls() {
     const ready = AppState.drawReady && AppState.receptionReady;
+    const drawIsArmed = ready && Date.now() >= AppState.drawUnlockAt;
     els.receptionButton.hidden = ready;
     els.drawReadyPanel.hidden = !ready;
     els.drawReadyGuest.textContent = `${AppState.currentGuestName || "ご主人様"}様`;
-    els.gachaButton.disabled = !ready || AppState.isAnimating || AppState.isReceiving;
+    els.gachaButton.disabled = !drawIsArmed || AppState.isAnimating || AppState.isReceiving;
+  }
+
+  function armDrawButton() {
+    if (AppState.drawArmTimer) window.clearTimeout(AppState.drawArmTimer);
+    AppState.drawReady = true;
+    AppState.drawUnlockAt = Date.now() + 700;
+    AppState.drawArmTimer = window.setTimeout(() => {
+      AppState.drawArmTimer = 0;
+      renderGachaControls();
+    }, 720);
+  }
+
+  function disarmDrawButton() {
+    if (AppState.drawArmTimer) window.clearTimeout(AppState.drawArmTimer);
+    AppState.drawArmTimer = 0;
+    AppState.drawReady = false;
+    AppState.drawUnlockAt = 0;
   }
 
   function unlockResultControls() {
