@@ -37,6 +37,7 @@
     isAnimating: false,
     isReceiving: false,
     receptionReady: false,
+    drawReady: false,
     currentMember: null,
     selectedMaid: null,
     resultSaved: false,
@@ -83,7 +84,7 @@
 
   function cacheElements() {
     [
-      "app", "idleScreen", "resultScreen", "gachaButton", "againButton", "endButton",
+      "app", "idleScreen", "resultScreen", "receptionButton", "drawReadyPanel", "drawReadyGuest", "gachaButton", "againButton", "endButton",
       "nextGuestButton", "machineHandle", "gachaMachine", "capsuleField",
       "dropCapsule", "focusLayer", "focusCapsule", "capsuleTop", "capsuleBottom",
       "focusMaid", "focusMaidImage", "focusPlaceholder", "focusMessage",
@@ -100,7 +101,8 @@
   }
 
   function bindEvents() {
-    els.gachaButton.addEventListener("click", () => startGacha());
+    els.receptionButton.addEventListener("click", () => startReception());
+    els.gachaButton.addEventListener("click", () => startDraw());
     els.againButton.addEventListener("click", continueGacha);
     els.endButton.addEventListener("click", endGuestSession);
     els.nextGuestButton.addEventListener("click", confirmNextGuest);
@@ -153,7 +155,7 @@
     });
     els.testAnimationButton.addEventListener("click", () => {
       els.adminPanel.classList.remove("is-active");
-      startGacha({ skipPayment: true });
+      startDraw({ allowWithoutReception: true });
     });
     window.addEventListener("resize", updateOrientation, { passive: true });
     window.addEventListener("orientationchange", updateOrientation, { passive: true });
@@ -267,7 +269,7 @@
     els.clearPassportKeyButton.disabled = !savedKey && !inputKey;
   }
 
-  async function startGacha({ skipPayment = false } = {}) {
+  async function startReception({ skipPayment = false } = {}) {
     if (AppState.isAnimating || AppState.isReceiving || isLandscape()) return;
     unlockAudio();
     AppState.isReceiving = true;
@@ -289,6 +291,7 @@
         }
         AppState.receptionReady = true;
       }
+      AppState.drawReady = true;
     } catch (error) {
       alert(error.message || "受付を完了できませんでした。");
       return;
@@ -296,6 +299,12 @@
       AppState.isReceiving = false;
       unlockControls();
     }
+  }
+
+  async function startDraw({ allowWithoutReception = false } = {}) {
+    if (AppState.isAnimating || AppState.isReceiving || isLandscape()) return;
+    if (!allowWithoutReception && (!AppState.receptionReady || !AppState.drawReady)) return;
+    unlockAudio();
     if (isLandscape()) return;
     const selectedMaid = drawMaid();
     if (!selectedMaid) {
@@ -427,6 +436,7 @@
 
   function finishResult(selectedMaid) {
     cleanupAnimation();
+    AppState.drawReady = false;
     saveResult(selectedMaid);
     prepareMaidImage(els.maidImage, els.maidPlaceholder, selectedMaid);
     els.resultMessage.textContent = `${displayName(selectedMaid)}が当たりました！`;
@@ -436,6 +446,7 @@
     unlockResultControls();
     renderHistory();
     renderAdmin();
+    renderGachaControls();
   }
 
   function drawMaid() {
@@ -516,6 +527,7 @@
     AppState.currentGuestName = "";
     AppState.currentMember = null;
     AppState.receptionReady = false;
+    AppState.drawReady = false;
     localStorage.removeItem(STORAGE_HISTORY);
     localStorage.removeItem(STORAGE_GUEST_NAME);
     renderHistory();
@@ -578,6 +590,7 @@
   function resetToIdle() {
     cleanupAnimation();
     clearResultVisuals();
+    AppState.drawReady = false;
     AppState.screen = "idle";
     AppState.isAnimating = false;
     AppState.selectedMaid = null;
@@ -585,12 +598,13 @@
     showScreen("idle");
     unlockControls();
     renderHistory();
+    renderGachaControls();
   }
 
   function continueGacha() {
     if (AppState.isAnimating || AppState.isReceiving || AppState.screen !== "result") return;
     resetToIdle();
-    startGacha();
+    startReception();
   }
 
   function endGuestSession() {
@@ -600,6 +614,7 @@
   }
 
   function lockControls() {
+    els.receptionButton.disabled = true;
     els.gachaButton.disabled = true;
     els.againButton.disabled = true;
     els.endButton.disabled = true;
@@ -607,10 +622,20 @@
   }
 
   function unlockControls() {
-    els.gachaButton.disabled = false;
+    els.receptionButton.disabled = false;
+    els.gachaButton.disabled = !AppState.drawReady;
     els.againButton.disabled = false;
     els.endButton.disabled = false;
     els.nextGuestButton.disabled = false;
+    renderGachaControls();
+  }
+
+  function renderGachaControls() {
+    const ready = AppState.drawReady && AppState.receptionReady;
+    els.receptionButton.hidden = ready;
+    els.drawReadyPanel.hidden = !ready;
+    els.drawReadyGuest.textContent = `${AppState.currentGuestName || "ご主人様"}様`;
+    els.gachaButton.disabled = !ready || AppState.isAnimating || AppState.isReceiving;
   }
 
   function unlockResultControls() {

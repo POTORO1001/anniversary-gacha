@@ -39,9 +39,22 @@
         </div>
       </div>
 
-      <button class="primary-button gacha-button" id="gachaButton">
-        <span>ガチャを回す！</span>
-      </button>
+      <div class="gacha-controls">
+        <button class="primary-button reception-button" id="receptionButton">
+          <span>受付を始める</span>
+        </button>
+        <div class="draw-ready-panel" id="drawReadyPanel" hidden>
+          <p class="draw-ready-status">
+            <strong id="drawReadyGuest">ご主人様</strong>
+            <span>お会計・受付完了</span>
+          </p>
+          <button class="physical-gacha-button" id="gachaButton" aria-label="ガチャを回す">
+            <span class="physical-button-icon" aria-hidden="true">↻</span>
+            <strong>回す！</strong>
+            <small>TAP</small>
+          </button>
+        </div>
+      </div>
 
       <footer class="idle-footer">
         <div>
@@ -175,7 +188,7 @@
         <input type="text" id="guestNameInput" maxlength="30" autocomplete="off" inputmode="text" placeholder="例: たろう" required>
         <menu>
           <button type="button" id="guestCancelButton" value="cancel">戻る</button>
-          <button value="confirm" class="primary-small" autofocus>この名前で回す</button>
+          <button value="confirm" class="primary-small" autofocus>この名前で受付を完了</button>
         </menu>
       </form>
     </dialog>
@@ -200,7 +213,7 @@
       <div id="passportMemberPreview" hidden>
         <p id="passportMemberName"></p>
         <p id="passportMemberNumber"></p>
-        <button type="button" id="passportConfirmButton" class="primary-small">このご主人様で回す</button>
+        <button type="button" id="passportConfirmButton" class="primary-small">このご主人様で受付を完了</button>
       </div>
       <menu><button type="button" id="passportScanCancel">戻る</button></menu>
     </dialog>

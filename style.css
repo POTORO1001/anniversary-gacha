@@ -295,6 +295,108 @@ button:disabled {
   filter: brightness(1.08);
 }
 
+.gacha-controls {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 88px;
+}
+
+.reception-button {
+  width: min(100%, 480px);
+}
+
+.draw-ready-panel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.draw-ready-panel[hidden] {
+  display: none;
+}
+
+.draw-ready-panel::before {
+  content: "";
+  width: 3px;
+  height: 12px;
+  margin-top: -16px;
+  background: #b67822;
+}
+
+.draw-ready-status {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  color: #7d3b56;
+  font-weight: 800;
+}
+
+.draw-ready-status strong {
+  color: var(--deep);
+  font-size: 20px;
+}
+
+.physical-gacha-button {
+  position: relative;
+  display: grid;
+  place-content: center;
+  width: clamp(142px, 20vw, 168px);
+  aspect-ratio: 1;
+  padding: 14px;
+  border: 8px solid var(--gold);
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle at 38% 28%, #ff9aba 0 12%, #e74f82 38%, #bc2458 76%);
+  box-shadow: 0 10px 0 #8d294b, 0 16px 24px rgba(79, 19, 48, .3), 0 0 0 4px #fff8d4, inset 0 5px 0 rgba(255,255,255,.45);
+  text-shadow: 0 2px 0 #7d1740;
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+.physical-gacha-button::after {
+  content: "";
+  position: absolute;
+  inset: -15px;
+  border: 3px solid rgba(246, 199, 75, .78);
+  border-radius: 50%;
+  animation: readyButtonPulse 1.8s ease-out infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.physical-gacha-button .physical-button-icon {
+  font-size: 31px;
+  line-height: .8;
+}
+
+.physical-gacha-button strong {
+  font-size: 31px;
+  line-height: 1.15;
+}
+
+.physical-gacha-button small {
+  margin-top: 2px;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.physical-gacha-button.is-pressed,
+.physical-gacha-button:active {
+  transform: translateY(9px) scale(.98);
+  box-shadow: 0 3px 0 #8d294b, 0 8px 16px rgba(79, 19, 48, .24), 0 0 0 4px #fff8d4, 0 0 34px rgba(246,199,75,.9), inset 0 5px 0 rgba(255,255,255,.35);
+  filter: brightness(1.08);
+}
+
+.physical-gacha-button:disabled::after {
+  animation: none;
+  opacity: 0;
+}
+
 .idle-footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -992,6 +1094,7 @@ body.is-screen-shaking .app {
 .focus-message.is-showing::before, .focus-message.is-showing::after { animation: winnerSparkle .7s ease-in-out 2 alternate; }
 .focus-message { overflow-wrap: anywhere; }
 @keyframes marqueeLight { from { opacity: .35; transform: scale(.8); } to { opacity: 1; transform: scale(1.2); } }
+@keyframes readyButtonPulse { from { opacity: .85; transform: scale(.92); } to { opacity: 0; transform: scale(1.12); } }
 @keyframes chargeRing { from { opacity: .85; transform: scale(.4); } to { opacity: 0; transform: scale(1.4); } }
 @keyframes revealBurst { 0% { opacity: 0; transform: scale(.15) rotate(-15deg); } 25% { opacity: .85; } 100% { opacity: 0; transform: scale(1.4) rotate(20deg); } }
 @keyframes winnerSparkle { from { opacity: .5; transform: scale(.7) rotate(-15deg); } to { opacity: 1; transform: scale(1.2) rotate(15deg); } }

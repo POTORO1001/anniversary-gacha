@@ -122,8 +122,8 @@ def build_pdf():
     c.roundRect(63, height - 91, width - 126, 29, 6, fill=1, stroke=1)
     text(c, width / 2, height - 81, "料金：ガチャ1回　1,000円", size=14.5, color=PINK, bold=True)
 
-    step_label(c, 32, height - 115, 1, "会計後、ガチャを開始", PINK)
-    rounded_box(c, 30, height - 160, width - 60, 32, PINK, PINK, ["「ガチャを回す」をタップ"], size=11, text_color=white)
+    step_label(c, 32, height - 115, 1, "受付を開始してお会計確認", PINK)
+    rounded_box(c, 30, height - 160, width - 60, 32, PINK, PINK, ["「受付を始める」→ 1,000円を確認"], size=10.5, text_color=white)
     arrow(c, width / 2, height - 160, width / 2, height - 174)
 
     step_label(c, 32, height - 192, 2, "ポトロパスポートを確認", GOLD)
@@ -135,20 +135,20 @@ def build_pdf():
     arrow(c, width / 2 + 57, height - 236, right_x + branch_w / 2, height - 256, GREEN)
     text(c, left_x + branch_w / 2, height - 251, "ある", size=8.5, color=PINK, bold=True)
     text(c, right_x + branch_w / 2, height - 251, "ない", size=8.5, color=GREEN, bold=True)
-    branch_card(c, left_x, height - 353, branch_w, 91, PINK_LIGHT, PINK, "会員のご主人様", ["1  カメラでQRを読み取る", "2  名前・会員番号を確認"], "このご主人様で回す")
-    branch_card(c, right_x, height - 353, branch_w, 91, GREEN_LIGHT, GREEN, "非会員のご主人様", ["1  お名前を入力する"], "この名前で回す")
+    branch_card(c, left_x, height - 353, branch_w, 91, PINK_LIGHT, PINK, "会員のご主人様", ["1  カメラでQRを読み取る", "2  名前・会員番号を確認"], "このご主人様で受付を完了", button_size=7.7)
+    branch_card(c, right_x, height - 353, branch_w, 91, GREEN_LIGHT, GREEN, "非会員のご主人様", ["1  お名前を入力する"], "この名前で受付を完了", button_size=8)
 
     arrow(c, left_x + branch_w / 2, height - 353, width / 2 - 38, height - 369, PINK)
     arrow(c, right_x + branch_w / 2, height - 353, width / 2 + 38, height - 369, GREEN)
-    step_label(c, 32, height - 382, 3, "ガチャ演出と結果確認", GOLD)
-    rounded_box(c, 30, height - 424, width - 60, 31, GOLD, GOLD, ["ガチャ演出  →  当選アクキーを確認"], size=10.5, text_color=white)
+    step_label(c, 32, height - 382, 3, "円形ボタンでガチャを開始", GOLD)
+    rounded_box(c, 30, height - 424, width - 60, 31, GOLD, GOLD, ["「回す！」→ ガチャ演出 → 当選アクキーを確認"], size=9.7, text_color=white)
     arrow(c, width / 2, height - 424, width / 2, height - 438)
 
     step_label(c, 32, height - 456, 4, "続けるか終了するかを選択", GREEN)
     diamond(c, width / 2, height - 484, width - 150, 36, GOLD_LIGHT, GOLD, "続けて回しますか？", size=10.5)
     arrow(c, width / 2 - 48, height - 494, left_x + branch_w / 2, height - 516, PINK)
     arrow(c, width / 2 + 48, height - 494, right_x + branch_w / 2, height - 516, GREEN)
-    branch_card(c, left_x, height - 603, branch_w, 81, PINK_LIGHT, PINK, "同じご主人様が続ける", ["1  次の1回分の料金を頂戴する"], "同じご主人様がもう一度ガチャを回す", button_size=6.8)
+    branch_card(c, left_x, height - 603, branch_w, 81, PINK_LIGHT, PINK, "同じご主人様が続ける", ["「もう一度ガチャを回す」をタップ"], "料金確認後、円形「回す！」", button_size=7.5)
     branch_card(c, right_x, height - 603, branch_w, 81, GREEN_LIGHT, GREEN, "終了する", ["最初の受付画面へ戻る"], "終了する", button_size=9)
 
     notice_y = 10
