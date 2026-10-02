@@ -46,6 +46,8 @@
     currentGuestName: "",
     currentHistory: [],
     pendingLogs: [],
+    pendingRetryTimer: 0,
+    pendingRetryDelay: 10000,
     skipRequested: false,
     skipAvailable: true,
     soundEnabled: true,
@@ -82,6 +84,10 @@
     renderHistory();
     renderAdmin();
     showScreen("idle");
+    if (AppState.spreadsheetEnabled) {
+      queueUnsyncedHistory();
+      window.setTimeout(retryPendingLogs, 1200);
+    }
   }
 
   function cacheElements() {
@@ -1083,7 +1089,7 @@
       AppState.pendingLogs.push(result);
       persistPendingLogs();
     }
-    sendSpreadsheetResult(result);
+    retryPendingLogs();
   }
 
   function queueUnsyncedHistory() {
@@ -1101,13 +1107,30 @@
 
   async function retryPendingLogs() {
     if (!AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl || AppState.pendingLogs.length === 0) {
+      clearPendingRetry();
       renderAdmin();
       return;
     }
+    clearPendingRetry();
     const pending = [...AppState.pendingLogs];
     for (const item of pending) {
       await sendSpreadsheetResult(item);
     }
+    if (AppState.pendingLogs.length > 0) schedulePendingRetry();
+  }
+
+  function schedulePendingRetry() {
+    if (AppState.pendingRetryTimer || !AppState.spreadsheetEnabled || !AppState.spreadsheetEndpointUrl) return;
+    AppState.pendingRetryTimer = window.setTimeout(() => {
+      AppState.pendingRetryTimer = 0;
+      retryPendingLogs();
+    }, AppState.pendingRetryDelay);
+    AppState.pendingRetryDelay = Math.min(AppState.pendingRetryDelay * 2, 300000);
+  }
+
+  function clearPendingRetry() {
+    if (AppState.pendingRetryTimer) window.clearTimeout(AppState.pendingRetryTimer);
+    AppState.pendingRetryTimer = 0;
   }
 
   async function sendSpreadsheetResult(result) {
@@ -1146,6 +1169,7 @@
     });
     persistPendingLogs();
     localStorage.setItem(STORAGE_HISTORY, JSON.stringify(AppState.currentHistory));
+    AppState.pendingRetryDelay = 10000;
   }
 
   function persistPendingLogs() {

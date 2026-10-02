@@ -65,8 +65,7 @@ function verifyMemberToken_(token) {
 }
 
 function getGachaMaid_(id) {
-  const raw = PropertiesService.getScriptProperties().getProperty("GACHA_MAIDS_JSON");
-  const maids = raw ? JSON.parse(raw) : [
+  const builtInMaids = [
     { id: "meru", name: "める" },
     { id: "mio", name: "みお" },
     { id: "rei", name: "れい" },
@@ -77,6 +76,20 @@ function getGachaMaid_(id) {
     { id: "nagi", name: "なぎ" },
     { id: "oumasan", name: "おうまさん" }
   ];
+  const raw = PropertiesService.getScriptProperties().getProperty("GACHA_MAIDS_JSON");
+  let configured = [];
+  try {
+    configured = raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    configured = [];
+  }
+  const maidsById = new Map(builtInMaids.map(maid => [maid.id, maid]));
+  if (Array.isArray(configured)) {
+    configured.forEach(maid => {
+      if (maid && maid.id && maid.name) maidsById.set(String(maid.id), { id: String(maid.id), name: String(maid.name) });
+    });
+  }
+  const maids = Array.from(maidsById.values());
   const maid = maids.find(item => item.id === id && item.name);
   if (!maid) throw new Error("Apps Scriptのメイド設定を確認してください。");
   return maid;

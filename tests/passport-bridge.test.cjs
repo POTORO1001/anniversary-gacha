@@ -46,7 +46,7 @@ function setup() {
   const post = payload => ctx.doPost({ parameter: { payload: JSON.stringify(payload) } });
   const member = () => post({ action:'passport.lookup', kioskKey:key, qrIdentifier:'test-qr' }).member;
   const payload = () => ({ resultId:crypto.randomUUID(), memberToken:member().memberToken, kioskKey:key, maidId:'meru', maidName:'tampered client name', guestName:'tampered client guest' });
-  return {post,member,payload,log,goods,calls,setFail:v=>{fail=v;}};
+  return {post,member,payload,log,goods,calls,setFail:v=>{fail=v;},setProperty:(k,v)=>props.set(k,v)};
 }
 
 test('member lookup requires kiosk key; signed tokens reject tampering',()=>{
@@ -69,6 +69,11 @@ test('nagi result is accepted by the goods registry',()=>{
 test('oumasan result is accepted by the goods registry',()=>{
   const s=setup(), p=s.payload(); p.maidId='oumasan'; assert.equal(s.post(p).ok,true);
   assert.equal(s.goods.rows[1][4],'周年アクキー / おうまさん');
+});
+test('stale configured maid list does not reject built-in additions',()=>{
+  const s=setup(); s.setProperty('GACHA_MAIDS_JSON', JSON.stringify([{id:'meru',name:'める'}]));
+  const p=s.payload(); p.maidId='nagi'; assert.equal(s.post(p).ok,true);
+  assert.equal(s.goods.rows[1][4],'周年アクキー / なぎ');
 });
 test('partial failure retries existing row and preserves received status',()=>{
   const s=setup(), p=s.payload(); s.setFail(true); assert.equal(s.post(p).ok,false);
